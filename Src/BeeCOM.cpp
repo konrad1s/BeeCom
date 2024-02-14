@@ -122,11 +122,11 @@ namespace beecom
     {
         if (validateCRC())
         {
-            packetHandler(packet);
+            packetHandler(packet, true);
         }
         else
         {
-            // Handle CRC error
+            packetHandler(packet, false);
         }
         resetState();
     }

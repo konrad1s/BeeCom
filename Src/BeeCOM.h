@@ -20,7 +20,7 @@ namespace beecom
         static constexpr uint16_t initialCRCValue = 0x1D0F;
 
     private:
-        static constexpr uint16_t lookupTable[256] = {/* Table values */};
+        static constexpr uint16_t lookupTable[256] = {/* TODO: Table values */};
 
     public:
         uint16_t calculate(const uint8_t *data, size_t length) const override
@@ -73,7 +73,7 @@ namespace beecom
         WHOLE_PACKET_RECEIVED
     };
 
-    using PacketHandler = void (*)(const Packet &packet);
+    using PacketHandler = void (*)(const Packet &packet, bool crcValid);
 
     class Receiver
     {
