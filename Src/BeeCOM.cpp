@@ -3,6 +3,8 @@
 
 namespace beecom
 {
+    CRC16AUGCCITTStrategy Receiver::defaultCRCStrategy;
+
     void Receiver::Deserialize(const uint8_t *data, size_t size)
     {
         while (size--)
@@ -80,7 +82,7 @@ namespace beecom
     void Receiver::handleStateGotCRCLo(uint8_t byte)
     {
         packet.header.crc |= static_cast<uint16_t>(byte) << 8;
-        state = PacketState::CRC_MSB_RECEIVED;
+        state = PacketState::GETTING_PAYLOAD;
     }
 
     void Receiver::handleStateGotCRCHi(uint8_t byte)
@@ -103,7 +105,8 @@ namespace beecom
             packet.payload[payloadCounter++] = byte;
             if (payloadCounter == packet.header.length)
             {
-                state = PacketState::WHOLE_PACKET_RECEIVED;
+                // state = PacketState::WHOLE_PACKET_RECEIVED;
+                processCompletePacket();
             }
         }
         else
@@ -128,9 +131,11 @@ namespace beecom
 
     bool Receiver::validateCRC() const
     {
-        // This function should calculate the CRC of the received packet and compare it with the received CRC.
-        // Placeholder for actual CRC calculation and validation
-        return true; // Always returns true for this example
+        uint16_t calculatedCRC = crcStrategy->calculate(packet.payload, packet.header.length);
+
+        uint16_t receivedCRC = (static_cast<uint16_t>(packet.header.crc) << 8) | static_cast<uint16_t>(packet.header.crc >> 8);
+
+        return calculatedCRC == receivedCRC;
     }
 
     void Receiver::resetState()
