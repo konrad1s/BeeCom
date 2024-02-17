@@ -5,39 +5,67 @@ namespace beecom
 {
     CRC16AUGCCITTStrategy Receiver::defaultCRCStrategy;
 
+    uint16_t CRC16AUGCCITTStrategy::calculate(const uint8_t *data, size_t length) const
+    {
+        uint16_t crc = initialCRCValue;
+        for (size_t i = 0; i < length; ++i)
+        {
+            crc = updateCRC(crc, data[i]);
+        }
+        return crc;
+    }
+
+    uint16_t CRC16AUGCCITTStrategy::updateCRC(uint16_t currentCRC, uint8_t dataByte) const
+    {
+        return (currentCRC << 8) ^ lookupTable[((currentCRC >> 8) ^ dataByte) & 0xFF];
+    }
+
+    void Packet::reset()
+    {
+        *this = Packet();
+    }
+
+    Receiver::Receiver(PacketHandler callback, ICRCStrategy *crcStrategy)
+        : packetHandler(callback), crcStrategy(crcStrategy ? crcStrategy : &defaultCRCStrategy) {}
+
     void Receiver::Deserialize(const uint8_t *data, size_t size)
     {
         while (size--)
         {
             uint8_t byte = *data++;
-            switch (state)
-            {
-            case PacketState::SOP_WAITING:
-                handleWaitingForSOP(byte);
-                break;
-            case PacketState::TYPE_WAITING:
-                handleWaitingForType(byte);
-                break;
-            case PacketState::LEN_WAITING:
-                handleWaitingForLength(byte);
-                break;
-            case PacketState::CRC_LSB_WAITING:
-                handleWaitingForCRCLow(byte);
-                break;
-            case PacketState::CRC_MSB_WAITING:
-                handleWaitingForCRCHigh(byte);
-                break;
-            case PacketState::GETTING_PAYLOAD:
-                handleGettingPayload(byte);
-                break;
-            default:
-                resetState();
-                break;
-            }
+            handleStateChange(byte);
         }
     }
 
-    void Receiver::handleWaitingForSOP(uint8_t byte)
+    void Receiver::handleStateChange(uint8_t byte)
+    {
+        switch (state)
+        {
+        case PacketState::SOP_WAITING:
+            handleSOPWaiting(byte);
+            break;
+        case PacketState::TYPE_WAITING:
+            handleTypeWaiting(byte);
+            break;
+        case PacketState::LEN_WAITING:
+            handleLengthWaiting(byte);
+            break;
+        case PacketState::CRC_LSB_WAITING:
+            handleCRCLowWaiting(byte);
+            break;
+        case PacketState::CRC_MSB_WAITING:
+            handleCRCHighWaiting(byte);
+            break;
+        case PacketState::GETTING_PAYLOAD:
+            handleGettingPayload(byte);
+            break;
+        default:
+            resetState();
+            break;
+        }
+    }
+
+    void Receiver::handleSOPWaiting(uint8_t byte)
     {
         if (byte == SOP_VALUE)
         {
@@ -46,13 +74,13 @@ namespace beecom
         }
     }
 
-    void Receiver::handleWaitingForType(uint8_t byte)
+    void Receiver::handleTypeWaiting(uint8_t byte)
     {
         packet.header.type = byte;
         state = PacketState::LEN_WAITING;
     }
 
-    void Receiver::handleWaitingForLength(uint8_t byte)
+    void Receiver::handleLengthWaiting(uint8_t byte)
     {
         if (byte <= MAX_PAYLOAD_SIZE)
         {
@@ -61,18 +89,17 @@ namespace beecom
         }
         else
         {
-            // Invalid packet length; reset state
-            resetState();
+            resetState(); // Invalid packet length; reset state
         }
     }
 
-    void Receiver::handleWaitingForCRCLow(uint8_t byte)
+    void Receiver::handleCRCLowWaiting(uint8_t byte)
     {
         packet.header.crc = byte;
         state = PacketState::CRC_MSB_WAITING;
     }
 
-    void Receiver::handleWaitingForCRCHigh(uint8_t byte)
+    void Receiver::handleCRCHighWaiting(uint8_t byte)
     {
         packet.header.crc |= static_cast<uint16_t>(byte) << 8;
         if (packet.header.length == 0)
@@ -98,8 +125,7 @@ namespace beecom
         }
         else
         {
-            // Payload overflow; reset state
-            resetState();
+            resetState(); // Payload overflow; reset state
         }
     }
 
@@ -129,7 +155,7 @@ namespace beecom
     {
         state = PacketState::SOP_WAITING;
         payloadCounter = 0;
-        memset(&packet, 0, sizeof(packet)); // Clear the received packet
+        std::memset(&packet, 0, sizeof(packet));
     }
 
 } // namespace beecom
