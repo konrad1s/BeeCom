@@ -3,11 +3,6 @@
 
 namespace beecom
 {
-    CRC16AUGCCITTStrategy Receiver::defaultCRCStrategy;
-
-    Receiver::Receiver(PacketHandler callback, ICRCStrategy *crcStrategy)
-        : packetHandler(callback), crcStrategy(crcStrategy ? crcStrategy : &defaultCRCStrategy) {}
-
     void Receiver::Deserialize(const uint8_t *data, size_t size)
     {
         while (size--)

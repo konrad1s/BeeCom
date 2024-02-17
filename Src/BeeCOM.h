@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <cassert>
+#include <cstddef>
 
 namespace beecom
 {
