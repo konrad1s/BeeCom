@@ -75,10 +75,24 @@ namespace beecom
         static constexpr uint16_t lookupTable[256] = {CRC16AUGCCITT_LOOKUP};
     };
 
+    class Transmitter
+    {
+    public:
+        Transmitter(ICRCStrategy *crcStrategy)
+            : crcStrategy(crcStrategy) {}
+
+        size_t Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const;
+
+    private:
+        ICRCStrategy *crcStrategy;
+        size_t calculateRequiredSize(const Packet &packet) const;
+    };
+
     class Receiver
     {
     public:
-        Receiver(PacketHandler callback, ICRCStrategy *crcStrategy = nullptr);
+        Receiver(PacketHandler callback, ICRCStrategy *crcStrategy);
+        size_t Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const;
         void Deserialize(const uint8_t *data, size_t size);
 
     private:
@@ -87,7 +101,6 @@ namespace beecom
         PacketState state = PacketState::SOP_WAITING;
         PacketHandler packetHandler;
         ICRCStrategy *crcStrategy;
-        static CRC16AUGCCITTStrategy defaultCRCStrategy;
 
         void handleStateChange(uint8_t byte);
         void handleSOPWaiting(uint8_t byte);
@@ -99,6 +112,40 @@ namespace beecom
         void processCompletePacket();
         bool validateCRC() const;
         void resetState();
+    };
+
+    class BeeCOM
+    {
+    public:
+        using ByteReceiveFunction = bool (*)(uint8_t *byte);
+
+        BeeCOM(PacketHandler packetHandler, ByteReceiveFunction byteReceiver, ICRCStrategy *crcStrategy = nullptr)
+            : crcStrategyInstance(crcStrategy ? *crcStrategy : defaultCRCStrategy),
+              receiver(packetHandler, &crcStrategyInstance),
+              transmitter(&crcStrategyInstance),
+              byteReceiveFunction(byteReceiver) {}
+
+        void receive()
+        {
+            uint8_t byte;
+
+            while (byteReceiveFunction(&byte))
+            {
+                receiver.Deserialize(&byte, 1);
+            }
+        }
+
+        size_t Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const
+        {
+            return transmitter.Serialize(packet, buffer, bufferSize);
+        }
+
+    private:
+        static CRC16AUGCCITTStrategy defaultCRCStrategy;
+        ICRCStrategy &crcStrategyInstance;
+        Receiver receiver;
+        Transmitter transmitter;
+        ByteReceiveFunction byteReceiveFunction; // Updated function pointer for receiving bytes
     };
 
 } // namespace beecom

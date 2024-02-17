@@ -3,7 +3,7 @@
 
 namespace beecom
 {
-    CRC16AUGCCITTStrategy Receiver::defaultCRCStrategy;
+    CRC16AUGCCITTStrategy BeeCOM::defaultCRCStrategy;
 
     uint16_t CRC16AUGCCITTStrategy::calculateFullPacketCRC(const PacketHeader &header, const uint8_t *payload, size_t payloadLength) const
     {
@@ -31,8 +31,41 @@ namespace beecom
         *this = Packet();
     }
 
+    size_t Transmitter::Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const
+    {
+        const size_t requiredSize = calculateRequiredSize(packet);
+
+        if (buffer == nullptr || bufferSize < requiredSize)
+        {
+            return 0; // Buffer too small or nullptr.
+        }
+
+        size_t size = 0;
+
+        buffer[size++] = packet.header.sop;
+        buffer[size++] = packet.header.type;
+        buffer[size++] = packet.header.length;
+
+        for (size_t i = 0; i < packet.header.length; ++i)
+        {
+            buffer[size++] = packet.payload[i];
+        }
+
+        uint16_t crc = crcStrategy->calculateFullPacketCRC(packet.header, packet.payload, packet.header.length);
+        buffer[size++] = static_cast<uint8_t>(crc & 0xFF);
+        buffer[size++] = static_cast<uint8_t>((crc >> 8) & 0xFF);
+
+        return size;
+    }
+
+    size_t Transmitter::calculateRequiredSize(const Packet &packet) const
+    {
+        return sizeof(packet.header.sop) + sizeof(packet.header.type) +
+               sizeof(packet.header.length) + packet.header.length + sizeof(packet.header.crc);
+    }
+
     Receiver::Receiver(PacketHandler callback, ICRCStrategy *crcStrategy)
-        : packetHandler(callback), crcStrategy(crcStrategy ? crcStrategy : &defaultCRCStrategy) {}
+        : packetHandler(callback), crcStrategy(crcStrategy) {}
 
     void Receiver::Deserialize(const uint8_t *data, size_t size)
     {
