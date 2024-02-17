@@ -5,13 +5,19 @@ namespace beecom
 {
     CRC16AUGCCITTStrategy Receiver::defaultCRCStrategy;
 
-    uint16_t CRC16AUGCCITTStrategy::calculate(const uint8_t *data, size_t length) const
+    uint16_t CRC16AUGCCITTStrategy::calculateFullPacketCRC(const PacketHeader &header, const uint8_t *payload, size_t payloadLength) const
     {
         uint16_t crc = initialCRCValue;
-        for (size_t i = 0; i < length; ++i)
+
+        crc = updateCRC(crc, header.sop);
+        crc = updateCRC(crc, header.type);
+        crc = updateCRC(crc, header.length);
+
+        for (size_t i = 0; i < payloadLength; ++i)
         {
-            crc = updateCRC(crc, data[i]);
+            crc = updateCRC(crc, payload[i]);
         }
+
         return crc;
     }
 
@@ -50,14 +56,14 @@ namespace beecom
         case PacketState::LEN_WAITING:
             handleLengthWaiting(byte);
             break;
+        case PacketState::GETTING_PAYLOAD:
+            handleGettingPayload(byte);
+            break;
         case PacketState::CRC_LSB_WAITING:
             handleCRCLowWaiting(byte);
             break;
         case PacketState::CRC_MSB_WAITING:
             handleCRCHighWaiting(byte);
-            break;
-        case PacketState::GETTING_PAYLOAD:
-            handleGettingPayload(byte);
             break;
         default:
             resetState();
@@ -85,7 +91,14 @@ namespace beecom
         if (byte <= MAX_PAYLOAD_SIZE)
         {
             packet.header.length = byte;
-            state = PacketState::CRC_LSB_WAITING;
+            if (packet.header.length == 0)
+            {
+                state = PacketState::CRC_LSB_WAITING;
+            }
+            else
+            {
+                state = PacketState::GETTING_PAYLOAD;
+            }
         }
         else
         {
@@ -102,15 +115,7 @@ namespace beecom
     void Receiver::handleCRCHighWaiting(uint8_t byte)
     {
         packet.header.crc |= static_cast<uint16_t>(byte) << 8;
-        if (packet.header.length == 0)
-        {
-            processCompletePacket();
-        }
-        else
-        {
-            payloadCounter = 0;
-            state = PacketState::GETTING_PAYLOAD;
-        }
+        processCompletePacket();
     }
 
     void Receiver::handleGettingPayload(uint8_t byte)
@@ -120,7 +125,7 @@ namespace beecom
             packet.payload[payloadCounter++] = byte;
             if (payloadCounter == packet.header.length)
             {
-                processCompletePacket();
+                state = PacketState::CRC_LSB_WAITING;
             }
         }
         else
@@ -144,8 +149,7 @@ namespace beecom
 
     bool Receiver::validateCRC() const
     {
-        uint16_t calculatedCRC = crcStrategy->calculate(packet.payload, packet.header.length);
-
+        uint16_t calculatedCRC = crcStrategy->calculateFullPacketCRC(packet.header, packet.payload, packet.header.length);
         uint16_t receivedCRC = (static_cast<uint16_t>(packet.header.crc) << 8) | static_cast<uint16_t>(packet.header.crc >> 8);
 
         return calculatedCRC == receivedCRC;
