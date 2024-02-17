@@ -12,59 +12,52 @@ namespace beecom
             uint8_t byte = *data++;
             switch (state)
             {
-            case PacketState::EMPTY:
-                handleStateEmpty(byte);
+            case PacketState::SOP_WAITING:
+                handleWaitingForSOP(byte);
                 break;
-            case PacketState::SOP_RECEIVED:
-                handleStateGotSOP(byte);
+            case PacketState::TYPE_WAITING:
+                handleWaitingForType(byte);
                 break;
-            case PacketState::TYPE_RECEIVED:
-                handleStateGotType(byte);
+            case PacketState::LEN_WAITING:
+                handleWaitingForLength(byte);
                 break;
-            case PacketState::LEN_RECEIVED:
-                handleStateGotLength(byte);
+            case PacketState::CRC_LSB_WAITING:
+                handleWaitingForCRCLow(byte);
                 break;
-            case PacketState::CRC_LSB_RECEIVED:
-                handleStateGotCRCLo(byte);
-                break;
-            case PacketState::CRC_MSB_RECEIVED:
-                handleStateGotCRCHi(byte);
+            case PacketState::CRC_MSB_WAITING:
+                handleWaitingForCRCHigh(byte);
                 break;
             case PacketState::GETTING_PAYLOAD:
-                handleStateGettingPayload(byte);
-                break;
-            case PacketState::WHOLE_PACKET_RECEIVED:
-                processCompletePacket();
+                handleGettingPayload(byte);
                 break;
             default:
-                // Handle unexpected state
                 resetState();
                 break;
             }
         }
     }
 
-    void Receiver::handleStateEmpty(uint8_t byte)
+    void Receiver::handleWaitingForSOP(uint8_t byte)
     {
         if (byte == SOP_VALUE)
         {
             packet.header.sop = SOP_VALUE;
-            state = PacketState::SOP_RECEIVED;
+            state = PacketState::TYPE_WAITING;
         }
     }
 
-    void Receiver::handleStateGotSOP(uint8_t byte)
+    void Receiver::handleWaitingForType(uint8_t byte)
     {
         packet.header.type = byte;
-        state = PacketState::TYPE_RECEIVED;
+        state = PacketState::LEN_WAITING;
     }
 
-    void Receiver::handleStateGotType(uint8_t byte)
+    void Receiver::handleWaitingForLength(uint8_t byte)
     {
         if (byte <= MAX_PAYLOAD_SIZE)
         {
             packet.header.length = byte;
-            state = PacketState::LEN_RECEIVED;
+            state = PacketState::CRC_LSB_WAITING;
         }
         else
         {
@@ -73,23 +66,18 @@ namespace beecom
         }
     }
 
-    void Receiver::handleStateGotLength(uint8_t byte)
+    void Receiver::handleWaitingForCRCLow(uint8_t byte)
     {
         packet.header.crc = byte;
-        state = PacketState::CRC_LSB_RECEIVED;
+        state = PacketState::CRC_MSB_WAITING;
     }
 
-    void Receiver::handleStateGotCRCLo(uint8_t byte)
+    void Receiver::handleWaitingForCRCHigh(uint8_t byte)
     {
         packet.header.crc |= static_cast<uint16_t>(byte) << 8;
-        state = PacketState::GETTING_PAYLOAD;
-    }
-
-    void Receiver::handleStateGotCRCHi(uint8_t byte)
-    {
         if (packet.header.length == 0)
         {
-            state = PacketState::WHOLE_PACKET_RECEIVED;
+            processCompletePacket();
         }
         else
         {
@@ -98,14 +86,13 @@ namespace beecom
         }
     }
 
-    void Receiver::handleStateGettingPayload(uint8_t byte)
+    void Receiver::handleGettingPayload(uint8_t byte)
     {
         if (payloadCounter < MAX_PAYLOAD_SIZE)
         {
             packet.payload[payloadCounter++] = byte;
             if (payloadCounter == packet.header.length)
             {
-                // state = PacketState::WHOLE_PACKET_RECEIVED;
                 processCompletePacket();
             }
         }
@@ -140,7 +127,7 @@ namespace beecom
 
     void Receiver::resetState()
     {
-        state = PacketState::EMPTY;
+        state = PacketState::SOP_WAITING;
         payloadCounter = 0;
         memset(&packet, 0, sizeof(packet)); // Clear the received packet
     }
