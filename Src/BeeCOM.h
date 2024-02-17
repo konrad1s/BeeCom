@@ -118,20 +118,39 @@ namespace beecom
     {
     public:
         using ByteReceiveFunction = bool (*)(uint8_t *byte);
+        using ByteTransmitFunction = void (*)(const uint8_t* buffer, size_t size);
 
-        BeeCOM(PacketHandler packetHandler, ByteReceiveFunction byteReceiver, ICRCStrategy *crcStrategy = nullptr)
+        BeeCOM(PacketHandler packetHandler, ByteReceiveFunction byteReceiver, ByteTransmitFunction byteTransmitter, ICRCStrategy *crcStrategy = nullptr)
             : crcStrategyInstance(crcStrategy ? *crcStrategy : defaultCRCStrategy),
               receiver(packetHandler, &crcStrategyInstance),
               transmitter(&crcStrategyInstance),
-              byteReceiveFunction(byteReceiver) {}
+              byteReceiveFunction(byteReceiver),
+              byteTransmitFunction(byteTransmitter) {}
 
         void receive()
         {
+            if (!byteReceiveFunction)
+            {
+                assert(false && "Byte receive function not set.");
+                return;
+            }
+
             uint8_t byte;
 
             while (byteReceiveFunction(&byte))
             {
                 receiver.Deserialize(&byte, 1);
+            }
+        }
+
+        
+        void send(const Packet& packet)
+        {
+            uint8_t buffer[MAX_PAYLOAD_SIZE + sizeof(PacketHeader)]; // Ensure buffer is large enough
+            size_t size = transmitter.Serialize(packet, buffer, sizeof(buffer));
+            if (size > 0)
+            {
+                byteTransmitFunction(buffer, size);
             }
         }
 
@@ -145,7 +164,8 @@ namespace beecom
         ICRCStrategy &crcStrategyInstance;
         Receiver receiver;
         Transmitter transmitter;
-        ByteReceiveFunction byteReceiveFunction; // Updated function pointer for receiving bytes
+        ByteReceiveFunction byteReceiveFunction;
+        ByteTransmitFunction byteTransmitFunction;
     };
 
 } // namespace beecom
