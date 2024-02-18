@@ -172,11 +172,11 @@ namespace beecom
     {
         if (validateCRC())
         {
-            packetHandler(packet, true);
+            packetHandler(packet, true, sendFunction);
         }
         else
         {
-            packetHandler(packet, false);
+            packetHandler(packet, false, sendFunction);
         }
         resetState();
     }
@@ -195,6 +195,8 @@ namespace beecom
         payloadCounter = 0;
         std::memset(&packet, 0, sizeof(packet));
     }
+
+    BeeCOM *BeeCOM::instance = nullptr;
 
     void BeeCOM::receive()
     {

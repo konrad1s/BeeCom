@@ -54,8 +54,9 @@ namespace beecom
         PACKET_RECEIVED
     };
 
-    using PacketHandler = void (*)(const Packet &packet, bool crcValid);
     using CRCFunction = uint16_t (*)(const PacketHeader &header, const uint8_t *payload, size_t payloadLength);
+    using SendFunction = void (*)(const Packet &);
+    using PacketHandler = void (*)(const Packet &packet, bool crcValid, SendFunction send);
 
     uint16_t calculateFullPacketCRC(const PacketHeader &header, const uint8_t *payload, size_t payloadLength);
 
@@ -78,6 +79,10 @@ namespace beecom
         Receiver(PacketHandler callback, CRCFunction crcFunc = calculateFullPacketCRC);
         size_t Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const;
         void Deserialize(const uint8_t *data, size_t size);
+        void setSendFunction(SendFunction sendFunc)
+        {
+            this->sendFunction = sendFunc;
+        }
 
     private:
         Packet packet;
@@ -85,6 +90,7 @@ namespace beecom
         PacketState state = PacketState::SOP_WAITING;
         PacketHandler packetHandler;
         CRCFunction crcCalculation;
+        SendFunction sendFunction;
 
         void handleStateChange(uint8_t byte);
         void handleSOPWaiting(uint8_t byte);
@@ -103,12 +109,17 @@ namespace beecom
     public:
         using ByteReceiveFunction = bool (*)(uint8_t *byte);
         using ByteTransmitFunction = void (*)(const uint8_t *buffer, size_t size);
+        static BeeCOM *instance;
 
         BeeCOM(PacketHandler packetHandler, ByteReceiveFunction byteReceiver, ByteTransmitFunction byteTransmitter, CRCFunction crcFunc = calculateFullPacketCRC)
             : receiver(packetHandler, crcFunc),
               transmitter(crcFunc),
               byteReceiveFunction(byteReceiver),
-              byteTransmitFunction(byteTransmitter) {}
+              byteTransmitFunction(byteTransmitter)
+        {
+            instance = this;
+            receiver.setSendFunction(StaticSendFunction);
+        }
 
         void receive();
         void send(const Packet &packet);
@@ -119,6 +130,10 @@ namespace beecom
         Transmitter transmitter;
         ByteReceiveFunction byteReceiveFunction;
         ByteTransmitFunction byteTransmitFunction;
+        static void StaticSendFunction(const Packet &packet)
+        {
+            instance->send(packet);
+        }
     };
 
 } // namespace beecom
