@@ -55,43 +55,27 @@ namespace beecom
     };
 
     using PacketHandler = void (*)(const Packet &packet, bool crcValid);
+    using CRCFunction = uint16_t (*)(const PacketHeader &header, const uint8_t *payload, size_t payloadLength);
 
-    class ICRCStrategy
-    {
-    public:
-        virtual ~ICRCStrategy() = default;
-        virtual uint16_t calculateFullPacketCRC(const PacketHeader &header, const uint8_t *payload, size_t payloadLength) const = 0;
-        virtual uint16_t updateCRC(uint16_t currentCRC, uint8_t dataByte) const = 0;
-    };
-
-    class CRC16AUGCCITTStrategy : public ICRCStrategy
-    {
-    public:
-        uint16_t calculateFullPacketCRC(const PacketHeader &header, const uint8_t *payload, size_t payloadLength) const override;
-        uint16_t updateCRC(uint16_t currentCRC, uint8_t dataByte) const override;
-
-    private:
-        static constexpr uint16_t initialCRCValue = 0x1D0F;
-        static constexpr uint16_t lookupTable[256] = {CRC16AUGCCITT_LOOKUP};
-    };
+    uint16_t calculateFullPacketCRC(const PacketHeader &header, const uint8_t *payload, size_t payloadLength);
 
     class Transmitter
     {
     public:
-        Transmitter(ICRCStrategy *crcStrategy)
-            : crcStrategy(crcStrategy) {}
+        Transmitter(CRCFunction crcFunc = calculateFullPacketCRC)
+            : crcCalculation(crcFunc) {}
 
         size_t Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const;
 
     private:
-        ICRCStrategy *crcStrategy;
+        CRCFunction crcCalculation;
         size_t calculateRequiredSize(const Packet &packet) const;
     };
 
     class Receiver
     {
     public:
-        Receiver(PacketHandler callback, ICRCStrategy *crcStrategy);
+        Receiver(PacketHandler callback, CRCFunction crcFunc = calculateFullPacketCRC);
         size_t Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const;
         void Deserialize(const uint8_t *data, size_t size);
 
@@ -100,7 +84,7 @@ namespace beecom
         size_t payloadCounter = 0;
         PacketState state = PacketState::SOP_WAITING;
         PacketHandler packetHandler;
-        ICRCStrategy *crcStrategy;
+        CRCFunction crcCalculation;
 
         void handleStateChange(uint8_t byte);
         void handleSOPWaiting(uint8_t byte);
@@ -118,50 +102,19 @@ namespace beecom
     {
     public:
         using ByteReceiveFunction = bool (*)(uint8_t *byte);
-        using ByteTransmitFunction = void (*)(const uint8_t* buffer, size_t size);
+        using ByteTransmitFunction = void (*)(const uint8_t *buffer, size_t size);
 
-        BeeCOM(PacketHandler packetHandler, ByteReceiveFunction byteReceiver, ByteTransmitFunction byteTransmitter, ICRCStrategy *crcStrategy = nullptr)
-            : crcStrategyInstance(crcStrategy ? *crcStrategy : defaultCRCStrategy),
-              receiver(packetHandler, &crcStrategyInstance),
-              transmitter(&crcStrategyInstance),
+        BeeCOM(PacketHandler packetHandler, ByteReceiveFunction byteReceiver, ByteTransmitFunction byteTransmitter, CRCFunction crcFunc = calculateFullPacketCRC)
+            : receiver(packetHandler, crcFunc),
+              transmitter(crcFunc),
               byteReceiveFunction(byteReceiver),
               byteTransmitFunction(byteTransmitter) {}
 
-        void receive()
-        {
-            if (!byteReceiveFunction)
-            {
-                assert(false && "Byte receive function not set.");
-                return;
-            }
-
-            uint8_t byte;
-
-            while (byteReceiveFunction(&byte))
-            {
-                receiver.Deserialize(&byte, 1);
-            }
-        }
-
-        
-        void send(const Packet& packet)
-        {
-            uint8_t buffer[MAX_PAYLOAD_SIZE + sizeof(PacketHeader)]; // Ensure buffer is large enough
-            size_t size = transmitter.Serialize(packet, buffer, sizeof(buffer));
-            if (size > 0)
-            {
-                byteTransmitFunction(buffer, size);
-            }
-        }
-
-        size_t Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const
-        {
-            return transmitter.Serialize(packet, buffer, bufferSize);
-        }
+        void receive();
+        void send(const Packet &packet);
+        size_t Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const;
 
     private:
-        static CRC16AUGCCITTStrategy defaultCRCStrategy;
-        ICRCStrategy &crcStrategyInstance;
         Receiver receiver;
         Transmitter transmitter;
         ByteReceiveFunction byteReceiveFunction;

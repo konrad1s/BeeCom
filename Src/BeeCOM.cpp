@@ -3,10 +3,16 @@
 
 namespace beecom
 {
-    CRC16AUGCCITTStrategy BeeCOM::defaultCRCStrategy;
+    static constexpr uint16_t lookupTable[256] = {CRC16AUGCCITT_LOOKUP};
 
-    uint16_t CRC16AUGCCITTStrategy::calculateFullPacketCRC(const PacketHeader &header, const uint8_t *payload, size_t payloadLength) const
+    uint16_t updateCRC(uint16_t currentCRC, uint8_t dataByte)
     {
+        return (currentCRC << 8) ^ lookupTable[((currentCRC >> 8) ^ dataByte) & 0xFF];
+    }
+
+    uint16_t calculateFullPacketCRC(const PacketHeader &header, const uint8_t *payload, size_t payloadLength)
+    {
+        static constexpr uint16_t initialCRCValue = 0x1D0F;
         uint16_t crc = initialCRCValue;
 
         crc = updateCRC(crc, header.sop);
@@ -19,11 +25,6 @@ namespace beecom
         }
 
         return crc;
-    }
-
-    uint16_t CRC16AUGCCITTStrategy::updateCRC(uint16_t currentCRC, uint8_t dataByte) const
-    {
-        return (currentCRC << 8) ^ lookupTable[((currentCRC >> 8) ^ dataByte) & 0xFF];
     }
 
     void Packet::reset()
@@ -51,7 +52,7 @@ namespace beecom
             buffer[size++] = packet.payload[i];
         }
 
-        uint16_t crc = crcStrategy->calculateFullPacketCRC(packet.header, packet.payload, packet.header.length);
+        uint16_t crc = crcCalculation(packet.header, packet.payload, packet.header.length);
         buffer[size++] = static_cast<uint8_t>(crc & 0xFF);
         buffer[size++] = static_cast<uint8_t>((crc >> 8) & 0xFF);
 
@@ -64,8 +65,8 @@ namespace beecom
                sizeof(packet.header.length) + packet.header.length + sizeof(packet.header.crc);
     }
 
-    Receiver::Receiver(PacketHandler callback, ICRCStrategy *crcStrategy)
-        : packetHandler(callback), crcStrategy(crcStrategy) {}
+    Receiver::Receiver(PacketHandler callback, CRCFunction crcFunc)
+        : packetHandler(callback), crcCalculation(crcFunc) {}
 
     void Receiver::Deserialize(const uint8_t *data, size_t size)
     {
@@ -182,7 +183,7 @@ namespace beecom
 
     bool Receiver::validateCRC() const
     {
-        uint16_t calculatedCRC = crcStrategy->calculateFullPacketCRC(packet.header, packet.payload, packet.header.length);
+        uint16_t calculatedCRC = crcCalculation(packet.header, packet.payload, packet.header.length);
         uint16_t receivedCRC = (static_cast<uint16_t>(packet.header.crc) << 8) | static_cast<uint16_t>(packet.header.crc >> 8);
 
         return calculatedCRC == receivedCRC;
@@ -193,6 +194,32 @@ namespace beecom
         state = PacketState::SOP_WAITING;
         payloadCounter = 0;
         std::memset(&packet, 0, sizeof(packet));
+    }
+
+    void BeeCOM::receive()
+    {
+        uint8_t byte;
+
+        while (byteReceiveFunction(&byte))
+        {
+            receiver.Deserialize(&byte, 1);
+        }
+    }
+
+    void BeeCOM::send(const Packet &packet)
+    {
+        uint8_t buffer[MAX_PAYLOAD_SIZE + sizeof(PacketHeader)];
+        size_t size = transmitter.Serialize(packet, buffer, sizeof(buffer));
+
+        if (size > 0)
+        {
+            byteTransmitFunction(buffer, size);
+        }
+    }
+
+    size_t BeeCOM::Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const
+    {
+        return transmitter.Serialize(packet, buffer, bufferSize);
     }
 
 } // namespace beecom
