@@ -3,15 +3,11 @@
 
 namespace beecom
 {
-    Receiver::Receiver(PacketHandler callback, CRCFunction crcFunc)
-        : packetHandler(callback), crcCalculation(crcFunc) {}
-
     void Receiver::Deserialize(const uint8_t *data, size_t size)
     {
-        while (size--)
+        for (size_t i = 0; i < size; ++i)
         {
-            uint8_t byte = *data++;
-            handleStateChange(byte);
+            handleStateChange(data[i]);
         }
     }
 
@@ -45,9 +41,9 @@ namespace beecom
 
     void Receiver::handleSOPWaiting(uint8_t byte)
     {
-        if (byte == SOP_VALUE)
+        if (byte == sopValue)
         {
-            packet.header.sop = SOP_VALUE;
+            packet.header.sop = byte;
             state = PacketState::TYPE_WAITING;
         }
     }
@@ -108,23 +104,15 @@ namespace beecom
 
     void Receiver::processCompletePacket()
     {
-        if (validateCRC())
-        {
-            packetHandler(packet, true, sendFunction);
-        }
-        else
-        {
-            packetHandler(packet, false, sendFunction);
-        }
+        bool crcValid = validateCRC();
+        packetHandler(packet, crcValid, sendFunction);
         resetState();
     }
 
     bool Receiver::validateCRC() const
     {
         uint16_t calculatedCRC = crcCalculation(packet.header, packet.payload, packet.header.length);
-        uint16_t receivedCRC = (static_cast<uint16_t>(packet.header.crc) << 8) | static_cast<uint16_t>(packet.header.crc >> 8);
-
-        return calculatedCRC == receivedCRC;
+        return calculatedCRC == packet.header.crc;
     }
 
     void Receiver::resetState()

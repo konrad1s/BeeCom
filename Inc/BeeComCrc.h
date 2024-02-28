@@ -1,5 +1,4 @@
-#ifndef BEECOMCRC_H_
-#define BEECOMCRC_H_
+#pragma once
 
 #include <cstdint>
 #include <cassert>
@@ -32,5 +31,3 @@ namespace beecom
     uint16_t calculateFullPacketCRC(const PacketHeader &header, const uint8_t *payload, size_t payloadLength);
 
 } // namespace beecom
-
-#endif /* BEECOMCRC_H_ */

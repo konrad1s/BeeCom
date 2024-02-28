@@ -1,24 +1,17 @@
-#ifndef BEECOM_RECEIVER_H_
-#define BEECOM_RECEIVER_H_
+#pragma once
 
-#include <cstdint>
-#include <cassert>
-#include <cstddef>
 #include "BeeComTypes.h"
-#include "BeeComCrc.h"
+#include <cstring> // For memcpy
 
 namespace beecom
 {
     class Receiver
     {
     public:
-        Receiver(PacketHandler callback, CRCFunction crcFunc = calculateFullPacketCRC);
-        size_t Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const;
+        Receiver(PacketHandler callback, CRCFunction crcFunc, uint8_t sop, SendFunction sendFunc)
+            : packetHandler(callback), crcCalculation(crcFunc), sopValue(sop), sendFunction(sendFunc) {}
+
         void Deserialize(const uint8_t *data, size_t size);
-        void setSendFunction(SendFunction sendFunc)
-        {
-            this->sendFunction = sendFunc;
-        }
 
     private:
         Packet packet;
@@ -27,6 +20,7 @@ namespace beecom
         PacketHandler packetHandler;
         CRCFunction crcCalculation;
         SendFunction sendFunction;
+        uint8_t sopValue;
 
         void handleStateChange(uint8_t byte);
         void handleSOPWaiting(uint8_t byte);
@@ -39,7 +33,4 @@ namespace beecom
         bool validateCRC() const;
         void resetState();
     };
-
-} // namespace beecom
-
-#endif /* BEECOM_RECEIVER_H_ */
+}

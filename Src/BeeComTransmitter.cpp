@@ -29,7 +29,8 @@ namespace beecom
     size_t Transmitter::calculateRequiredSize(const Packet &packet) const
     {
         return sizeof(packet.header.sop) + sizeof(packet.header.type) +
-               sizeof(packet.header.length) + packet.header.length + sizeof(packet.header.crc);
+               sizeof(packet.header.length) + packet.header.length +
+               sizeof(packet.header.crc);
     }
 
-} // namespace beecom
+} 

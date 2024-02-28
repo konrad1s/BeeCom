@@ -1,10 +1,7 @@
 #include "BeeCOM.h"
-#include <cstring>
 
 namespace beecom
 {
-    BeeCOM *BeeCOM::instance = nullptr;
-
     void BeeCOM::receive()
     {
         uint8_t byte;
@@ -15,10 +12,10 @@ namespace beecom
         }
     }
 
-    void BeeCOM::send(const Packet &packet)
+    void BeeCOM::send(const Packet& packet)
     {
         uint8_t buffer[MAX_PAYLOAD_SIZE + sizeof(PacketHeader)];
-        size_t size = transmitter.Serialize(packet, buffer, sizeof(buffer));
+        size_t size = Serialize(packet, buffer, sizeof(buffer));
 
         if (size > 0U)
         {
@@ -26,9 +23,8 @@ namespace beecom
         }
     }
 
-    size_t BeeCOM::Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const
+    size_t BeeCOM::Serialize(const Packet& packet, uint8_t* buffer, size_t bufferSize) const
     {
         return transmitter.Serialize(packet, buffer, bufferSize);
     }
-
-} // namespace beecom
+}

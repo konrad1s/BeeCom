@@ -1,9 +1,7 @@
-#ifndef BEECOM_H_
-#define BEECOM_H_
+#pragma once
 
 #include <cstdint>
-#include <cassert>
-#include <cstddef>
+#include <functional>
 #include "BeeComTypes.h"
 #include "BeeComCrc.h"
 #include "BeeComTransmitter.h"
@@ -14,21 +12,19 @@ namespace beecom
     class BeeCOM
     {
     public:
-        using ByteReceiveFunction = bool (*)(uint8_t *byte);
-        using ByteTransmitFunction = void (*)(const uint8_t *buffer, size_t size);
-        static BeeCOM *instance;
+        using ByteReceiveFunction = std::function<bool(uint8_t *byte)>;
+        using ByteTransmitFunction = std::function<void(const uint8_t *buffer, size_t size)>;
 
         BeeCOM(PacketHandler packetHandler,
                ByteReceiveFunction byteReceiver,
                ByteTransmitFunction byteTransmitter,
-               CRCFunction crcFunc = calculateFullPacketCRC)
-            : receiver(packetHandler, crcFunc),
+               CRCFunction crcFunc = calculateFullPacketCRC,
+               uint8_t receiverSop = 0xA5U)
+            : receiver(packetHandler, crcFunc, receiverSop, [this](const Packet& packet) { this->send(packet); }),
               transmitter(crcFunc),
               byteReceiveFunction(byteReceiver),
               byteTransmitFunction(byteTransmitter)
         {
-            instance = this;
-            receiver.setSendFunction(StaticSendFunction);
         }
 
         void receive();
@@ -40,12 +36,5 @@ namespace beecom
         Transmitter transmitter;
         ByteReceiveFunction byteReceiveFunction;
         ByteTransmitFunction byteTransmitFunction;
-        static void StaticSendFunction(const Packet &packet)
-        {
-            instance->send(packet);
-        }
     };
-
-} // namespace beecom
-
-#endif /* BEECOM_H_ */
+}

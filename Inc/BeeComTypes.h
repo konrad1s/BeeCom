@@ -1,18 +1,15 @@
-#ifndef BEECOMPACKET_H_
-#define BEECOMPACKET_H_
+#pragma once
 
 #include <cstdint>
-#include <cassert>
-#include <cstddef>
+#include <functional>
 
 namespace beecom
 {
     constexpr uint8_t MAX_PAYLOAD_SIZE = 200U;
-    constexpr uint8_t SOP_VALUE = 0xA5U;
 
     struct PacketHeader
     {
-        uint8_t sop = SOP_VALUE;
+        uint8_t sop = 0U;
         uint8_t type = 0U;
         uint8_t length = 0U;
         uint16_t crc = 0U;
@@ -36,10 +33,7 @@ namespace beecom
         PACKET_RECEIVED
     };
 
-    using CRCFunction = uint16_t (*)(const PacketHeader &header, const uint8_t *payload, size_t payloadLength);
-    using SendFunction = void (*)(const Packet &);
-    using PacketHandler = void (*)(const Packet &packet, bool crcValid, SendFunction send);
-
-} // namespace beecom
-
-#endif /* BEECOMPACKET_H_ */
+    using CRCFunction = std::function<uint16_t(const PacketHeader &, const uint8_t *, size_t)>;
+    using SendFunction = std::function<void(const Packet &)>;
+    using PacketHandler = std::function<void(const Packet &, bool crcValid, SendFunction send)>;
+}
