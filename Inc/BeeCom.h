@@ -15,12 +15,15 @@ namespace beecom
         using ByteReceiveFunction = std::function<bool(uint8_t *byte)>;
         using ByteTransmitFunction = std::function<void(const uint8_t *buffer, size_t size)>;
 
-        BeeCOM(PacketHandler packetHandler,
+       BeeCOM(PacketHandler packetHandler,
                ByteReceiveFunction byteReceiver,
                ByteTransmitFunction byteTransmitter,
                CRCFunction crcFunc = calculateFullPacketCRC,
-               uint8_t receiverSop = 0xA5U)
-            : receiver(packetHandler, crcFunc, receiverSop, [this](const Packet& packet) { this->send(packet); }),
+               uint8_t receiverSop = 0xA5U,
+               InvalidPacketHandler invalidHandler = [](SendFunction) {})
+            : receiver(packetHandler, crcFunc, receiverSop, 
+                   [this](const Packet& packet) { this->send(packet); }, 
+                   invalidHandler),
               transmitter(crcFunc),
               byteReceiveFunction(byteReceiver),
               byteTransmitFunction(byteTransmitter)

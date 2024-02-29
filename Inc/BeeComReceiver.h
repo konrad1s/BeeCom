@@ -1,15 +1,20 @@
 #pragma once
 
 #include "BeeComTypes.h"
-#include <cstring> // For memcpy
+#include <cstring>
+#include <functional>
 
 namespace beecom
 {
     class Receiver
     {
     public:
-        Receiver(PacketHandler callback, CRCFunction crcFunc, uint8_t sop, SendFunction sendFunc)
-            : packetHandler(callback), crcCalculation(crcFunc), sopValue(sop), sendFunction(sendFunc) {}
+        Receiver(PacketHandler callback, CRCFunction crcFunc, uint8_t sop,
+                 SendFunction sendFunc, InvalidPacketHandler invalidHandler = [](SendFunction) {})
+            : packetHandler(callback), crcCalculation(crcFunc), sopValue(sop),
+              sendFunction(sendFunc), invalidPacketHandler(invalidHandler)
+        {
+        }
 
         void Deserialize(const uint8_t *data, size_t size);
 
@@ -20,6 +25,7 @@ namespace beecom
         PacketHandler packetHandler;
         CRCFunction crcCalculation;
         SendFunction sendFunction;
+        InvalidPacketHandler invalidPacketHandler;
         uint8_t sopValue;
 
         void handleStateChange(uint8_t byte);

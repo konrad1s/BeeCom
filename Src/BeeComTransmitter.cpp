@@ -5,8 +5,10 @@ namespace beecom
 {
     size_t Transmitter::Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const
     {
-        const size_t requiredSize = calculateRequiredSize(packet);
-        /* TODO: add assert */
+        if (bufferSize < calculateRequiredSize(packet))
+        {
+            return 0;
+        }
 
         size_t size = 0U;
 

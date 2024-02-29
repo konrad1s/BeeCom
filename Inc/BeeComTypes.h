@@ -36,4 +36,5 @@ namespace beecom
     using CRCFunction = std::function<uint16_t(const PacketHeader &, const uint8_t *, size_t)>;
     using SendFunction = std::function<void(const Packet &)>;
     using PacketHandler = std::function<void(const Packet &, bool crcValid, SendFunction send)>;
+    using InvalidPacketHandler = std::function<void(SendFunction send)>;
 }

@@ -70,7 +70,7 @@ namespace beecom
         }
         else
         {
-            resetState(); // Invalid packet length; reset state
+            resetState();
         }
     }
 
@@ -98,7 +98,7 @@ namespace beecom
         }
         else
         {
-            resetState(); // Payload overflow; reset state
+            resetState();
         }
     }
 
@@ -120,6 +120,10 @@ namespace beecom
         state = PacketState::SOP_WAITING;
         payloadCounter = 0;
         packet.reset();
+        if (invalidPacketHandler)
+        {
+            invalidPacketHandler(sendFunction);
+        }
     }
 
-} // namespace beecom
+}
