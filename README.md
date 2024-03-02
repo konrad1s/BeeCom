@@ -9,13 +9,38 @@ BeeCOM is a lightweight, efficient, and easy-to-use C++ library designed for com
 - **Serialization and Deserialization:** Automatically convert between packets and byte arrays for transmission and reception.
 - **Customizable Transport Layer:** Define your own byte receive and transmit functions to integrate with any physical layer protocol.
 
+## BeeCom Packet
+The BeeCom packet is a structured data format designed for efficient and reliable communication between devices, particularly in embedded systems. A BeeCom packet encapsulates the data to be transmitted along with metadata that helps in the processing, routing, and validation of the packet. The structure of a BeeCom packet typically includes several key components:
+
+### Packet Structure:
+
+1. Start of Packet (SOP):
+        A predefined byte sequence that indicates the beginning of a packet.
+        Helps in synchronization and identifying the start of a new packet in a stream of bytes.
+
+2. Packet Type:
+        Identifies the type or category of the data contained within the packet.
+        Enables the receiving system to process the packet accordingly.
+
+3. Payload Length:
+        Specifies the size of the payload in bytes.
+        Allows the receiver to determine how many bytes to read as part of the packet's payload.
+
+4. Payload:
+        The actual data being transmitted.
+        Its structure and content vary depending on the packet type and the application's requirements.
+
+5. CRC (Cyclic Redundancy Check):
+        A checksum calculated over the packet's contents (excluding the SOP but typically including the packet type, payload length, and payload).
+        Used by the receiver to detect errors in the packet.
+
+### Example Packet:
+![example_packet](https://github.com/konrad1s/BeeCom/blob/master/examples/beecom_packet.png)
+
 ## BeeCOM with STM32 and UART Example Usage
 
 This example demonstrates integrating the BeeCOM library with an STM32 microcontroller for UART communication. It includes setting up packet handlers, byte receive and transmit functions, and the main execution loop.
 
-## Setup
-
-### Integration with STM32CubeIDE
 - Ensure you have the HAL library configured for UART communication (huart1 in this example).
 - Place the BeeCOM library files in your project directory.
 - Include the BeeCOM header (#include "BeeCOM.h") in your main file.
