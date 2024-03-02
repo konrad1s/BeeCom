@@ -1,6 +1,7 @@
 from tqdm import tqdm
 from beecom_packet import BeeCOMPacket
 from uart_com import UARTCommunication
+import logging
 
 def read_hex_file(file_path):
     """Read a .hex file and return its contents as bytes."""
@@ -13,7 +14,7 @@ def send_hex_file_contents(uart_comm, file_path, max_payload_size=200):
     
     total_chunks = len(file_contents) // max_payload_size + (1 if len(file_contents) % max_payload_size else 0)
     
-    print("Sending file contents...")
+    logging.info("Sending file contents...")
     with tqdm(total=total_chunks, unit="packet") as pbar:
         for i in range(0, len(file_contents), max_payload_size):
             payload_chunk = file_contents[i:i+max_payload_size]
@@ -23,6 +24,8 @@ def send_hex_file_contents(uart_comm, file_path, max_payload_size=200):
             pbar.update(1)
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    
     uart_comm = UARTCommunication('COM8', 115200)
     file_path = '../STM32F407VE/build/beecom.hex'
 

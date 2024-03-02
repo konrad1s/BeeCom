@@ -1,4 +1,7 @@
 import struct
+import logging
+
+logger = logging.getLogger(__name__)
 
 def calculate_crc16_ccitt(data, poly=0x1021, crc=0x1D0F):
     """Calculate CRC16 CCITT variant."""
@@ -24,4 +27,5 @@ class BeeCOMPacket:
         header = struct.pack('BBB', self.sop, self.packet_type, length)
         crc = calculate_crc16_ccitt(header + self.payload)
         packet = header + self.payload + struct.pack('H', crc)
+        logger.debug(f"Packet created with SOP: {self.sop}, Type: {self.packet_type}, Length: {length}, CRC: {crc}")
         return packet

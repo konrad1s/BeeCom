@@ -1,5 +1,8 @@
 import serial
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 class UARTCommunication:
     def __init__(self, port, baudrate):
@@ -24,10 +27,10 @@ class UARTCommunication:
         if response:
             ack_code = response[-3]
             if ack_code == 0xAA:
-                print("ACK received.")
+                logger.info("ACK received.")
             elif ack_code == 0x55:
-                print("NACK received.")
+                logger.info("NACK received.")
             else:
-                print(f"Unknown response: {response.hex()}")
+                logger.warning(f"Unknown response: {response.hex()}")
         else:
-            print("Failed to receive a valid response.")
+            logger.error("Failed to receive a valid response.")
