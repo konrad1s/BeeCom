@@ -45,7 +45,7 @@ This example demonstrates integrating the BeeCOM library with an STM32 microcont
 
 - Ensure you have the HAL library configured for UART communication (huart1 in this example).
 - Place the BeeCOM library files in your project directory.
-- Include the BeeCOM header (#include "BeeCOM.h") in your main file.
+- Include the BeeCOM header (#include "BeeCom.h") in your main file.
 - Insert the example code in the appropriate sections of your main function, typically after initializing the system and peripherals.
 
 A lambda function is used as the packet handler. It constructs and sends an acknowledgment packet (ackPacket) depending on the CRC check result.

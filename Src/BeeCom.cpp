@@ -1,4 +1,4 @@
-#include "BeeCOM.h"
+#include "BeeCom.h"
 
 namespace beecom
 {
