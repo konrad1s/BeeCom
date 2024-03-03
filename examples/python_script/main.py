@@ -22,6 +22,7 @@ def send_hex_file_contents(uart_comm, file_path, max_payload_size=200):
             response = uart_comm.send_packet(packet)
             UARTCommunication.interpret_response(response)
             pbar.update(1)
+    logging.info("File contents sent.")
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

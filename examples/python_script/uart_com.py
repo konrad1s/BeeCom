@@ -27,9 +27,9 @@ class UARTCommunication:
         if response:
             ack_code = response[-3]
             if ack_code == 0xAA:
-                logger.info("ACK received.")
+                logger.debug("ACK received.")
             elif ack_code == 0x55:
-                logger.info("NACK received.")
+                logger.debug("NACK received.")
             else:
                 logger.warning(f"Unknown response: {response.hex()}")
         else:

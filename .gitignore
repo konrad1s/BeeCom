@@ -3,3 +3,5 @@ examples/STM32F407VE/build/*
 **/.vscode/*
 !.vscode/tasks.json
 !.vscode/launch.json
+
+*.pyc
