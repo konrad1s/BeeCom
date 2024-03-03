@@ -1,0 +1,22 @@
+name: CI for STM32 Project
+
+on:
+  push:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi
+        sudo apt-get install -y make
+    - name: Build project
+      run: |
+        cd examples/STM32F407VE
+        make all
