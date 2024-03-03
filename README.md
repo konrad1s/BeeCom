@@ -2,6 +2,8 @@
 
 BeeCOM is a lightweight, efficient, and easy-to-use C++ library designed for communication in embedded systems. It provides a comprehensive solution for packet-based communication, including packet serialization/deserialization, CRC (Cyclic Redundancy Check) validation, and customizable transport mechanisms. This library is particularly suited for applications requiring reliable data exchange over serial interfaces or custom communication protocols.
 
+![Build Status](https://github.com/konrad1s/BeeCom-Protocol/actions/workflows/stm32-c-cpp.yml/badge.svg)
+
 ## Key Features
 
 - **Packet-Based Communication:** Structure your data into packets for organized and reliable transmission.
