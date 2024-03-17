@@ -9,14 +9,17 @@ namespace beecom
     class Receiver
     {
     public:
-        Receiver(PacketHandler callback, CRCFunction crcFunc, uint8_t sop,
-                 SendFunction sendFunc, InvalidPacketHandler invalidHandler = [](SendFunction) {})
-            : packetHandler(callback), crcCalculation(crcFunc), sopValue(sop),
-              sendFunction(sendFunc), invalidPacketHandler(invalidHandler)
+        Receiver(CRCFunction crcFunc, uint8_t sop, SendFunction sendFunc,
+                 InvalidPacketHandler invalidHandler = [](SendFunction) {})
+            : crcCalculation(crcFunc), sopValue(sop), sendFunction(sendFunc), invalidPacketHandler(invalidHandler)
         {
         }
 
         void Deserialize(const uint8_t *data, size_t size);
+        void setPacketHandler(PacketHandler handler)
+        {
+            packetHandler = handler;
+        }
 
     private:
         Packet packet;

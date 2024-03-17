@@ -111,7 +111,8 @@ int main(void)
         HAL_UART_Transmit(&huart1, const_cast<uint8_t *>(buffer), size, 100);
     };
 
-    beecom::BeeCOM beecom(packetHandler, receive, transmit);
+    beecom::BeeCOM beecom(receive, transmit);
+    beecom.setPacketHandler(packetHandler);
     /* USER CODE END 2 */
 
     /* Infinite loop */

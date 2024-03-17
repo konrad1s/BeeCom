@@ -105,7 +105,10 @@ namespace beecom
     void Receiver::processCompletePacket()
     {
         bool crcValid = validateCRC();
-        packetHandler(packet, crcValid, sendFunction);
+        if (packetHandler)
+        {
+            packetHandler(packet, crcValid, sendFunction);
+        }
         resetState();
     }
 
