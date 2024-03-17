@@ -15,16 +15,12 @@ namespace beecom
     void BeeCOM::send(const Packet& packet)
     {
         uint8_t buffer[MAX_PAYLOAD_SIZE + sizeof(PacketHeader)];
-        size_t size = Serialize(packet, buffer, sizeof(buffer));
+        size_t size = transmitter.Serialize(packet, buffer, sizeof(buffer));
+
 
         if (size > 0U)
         {
             byteTransmitFunction(buffer, size);
         }
-    }
-
-    size_t BeeCOM::Serialize(const Packet& packet, uint8_t* buffer, size_t bufferSize) const
-    {
-        return transmitter.Serialize(packet, buffer, bufferSize);
     }
 }

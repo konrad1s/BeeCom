@@ -32,7 +32,6 @@ namespace beecom
 
         void receive();
         void send(const Packet &packet);
-        size_t Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const;
 
     private:
         Receiver receiver;
