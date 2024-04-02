@@ -34,7 +34,8 @@ namespace beecom
         void handleStateChange(uint8_t byte);
         void handleSOPWaiting(uint8_t byte);
         void handleTypeWaiting(uint8_t byte);
-        void handleLengthWaiting(uint8_t byte);
+        void handleLengthLsbWaiting(uint8_t byte);
+        void handleLengthMsbWaiting(uint8_t byte);
         void handleCRCLowWaiting(uint8_t byte);
         void handleCRCHighWaiting(uint8_t byte);
         void handleGettingPayload(uint8_t byte);

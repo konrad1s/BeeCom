@@ -11,7 +11,7 @@ namespace beecom
     {
         uint8_t sop = 0U;
         uint8_t type = 0U;
-        uint8_t length = 0U;
+        uint16_t length = 0U;
         uint16_t crc = 0U;
     };
 
@@ -26,7 +26,8 @@ namespace beecom
     {
         SOP_WAITING,
         TYPE_WAITING,
-        LEN_WAITING,
+        LEN_LSB_WAITING,
+        LEN_MSB_WAITING,
         GETTING_PAYLOAD,
         CRC_LSB_WAITING,
         CRC_MSB_WAITING,

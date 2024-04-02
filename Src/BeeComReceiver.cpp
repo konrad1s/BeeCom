@@ -21,8 +21,11 @@ namespace beecom
         case PacketState::TYPE_WAITING:
             handleTypeWaiting(byte);
             break;
-        case PacketState::LEN_WAITING:
-            handleLengthWaiting(byte);
+        case PacketState::LEN_LSB_WAITING:
+            handleLengthLsbWaiting(byte);
+            break;
+        case PacketState::LEN_MSB_WAITING:
+            handleLengthMsbWaiting(byte);
             break;
         case PacketState::GETTING_PAYLOAD:
             handleGettingPayload(byte);
@@ -51,26 +54,29 @@ namespace beecom
     void Receiver::handleTypeWaiting(uint8_t byte)
     {
         packet.header.type = byte;
-        state = PacketState::LEN_WAITING;
+        state = PacketState::LEN_LSB_WAITING;
     }
 
-    void Receiver::handleLengthWaiting(uint8_t byte)
+    void Receiver::handleLengthLsbWaiting(uint8_t byte)
     {
-        if (byte <= MAX_PAYLOAD_SIZE)
+        packet.header.length = static_cast<uint16_t>(byte);
+        state = PacketState::LEN_MSB_WAITING;
+    }
+
+    void Receiver::handleLengthMsbWaiting(uint8_t byte)
+    {
+        packet.header.length = (static_cast<uint16_t>(packet.header.length) << 8) | byte;
+        if (packet.header.length > MAX_PAYLOAD_SIZE)
         {
-            packet.header.length = byte;
-            if (packet.header.length == 0)
-            {
-                state = PacketState::CRC_LSB_WAITING;
-            }
-            else
-            {
-                state = PacketState::GETTING_PAYLOAD;
-            }
+            resetState();
+        }
+        else if (packet.header.length == 0)
+        {
+            state = PacketState::CRC_LSB_WAITING;
         }
         else
         {
-            resetState();
+            state = PacketState::GETTING_PAYLOAD;
         }
     }
 
