@@ -59,13 +59,13 @@ namespace beecom
 
     void Receiver::handleLengthLsbWaiting(uint8_t byte)
     {
-        packet.header.length = static_cast<uint16_t>(byte);
+        packet.header.length = byte;
         state = PacketState::LEN_MSB_WAITING;
     }
 
     void Receiver::handleLengthMsbWaiting(uint8_t byte)
     {
-        packet.header.length = (static_cast<uint16_t>(packet.header.length) << 8) | byte;
+        packet.header.length |= static_cast<uint16_t>(byte) << 8;
         if (packet.header.length > MAX_PAYLOAD_SIZE)
         {
             resetState();

@@ -32,7 +32,7 @@ namespace beecom
         {
         }
 
-        void receive();
+        size_t receive();
         void send(const Packet &packet);
         void setPacketHandler(PacketHandler handler) 
         {

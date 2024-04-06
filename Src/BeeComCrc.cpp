@@ -14,7 +14,8 @@ namespace beecom
 
         crc = updateCRC(crc, header.sop);
         crc = updateCRC(crc, header.type);
-        crc = updateCRC(crc, header.length);
+        crc = updateCRC(crc, header.length & 0xFF);
+        crc = updateCRC(crc, header.length >> 8);
 
         for (size_t i = 0; i < payloadLength; ++i)
         {
