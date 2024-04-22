@@ -14,7 +14,8 @@ namespace beecom
 
         buffer[size++] = packet.header.sop;
         buffer[size++] = packet.header.type;
-        buffer[size++] = packet.header.length;
+        buffer[size++] = static_cast<uint8_t>(packet.header.length & 0xFFU);
+        buffer[size++] = static_cast<uint8_t>((packet.header.length >> 8U) & 0xFFU);
 
         for (size_t i = 0U; i < packet.header.length; ++i)
         {
