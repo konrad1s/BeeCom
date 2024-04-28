@@ -15,25 +15,25 @@ namespace beecom
     {
         switch (state)
         {
-        case PacketState::SOP_WAITING:
+        case State::sopWaiting:
             handleSOPWaiting(byte);
             break;
-        case PacketState::TYPE_WAITING:
+        case State::typeWaiting:
             handleTypeWaiting(byte);
             break;
-        case PacketState::LEN_LSB_WAITING:
+        case State::lenLsbWaiting:
             handleLengthLsbWaiting(byte);
             break;
-        case PacketState::LEN_MSB_WAITING:
+        case State::lenMsbWaiting:
             handleLengthMsbWaiting(byte);
             break;
-        case PacketState::GETTING_PAYLOAD:
+        case State::gettingPayload:
             handleGettingPayload(byte);
             break;
-        case PacketState::CRC_LSB_WAITING:
+        case State::crcLsbWaiting:
             handleCRCLowWaiting(byte);
             break;
-        case PacketState::CRC_MSB_WAITING:
+        case State::crcMsbWaiting:
             handleCRCHighWaiting(byte);
             break;
         default:
@@ -47,20 +47,20 @@ namespace beecom
         if (byte == sopValue)
         {
             packet.header.sop = byte;
-            state = PacketState::TYPE_WAITING;
+            state = State::typeWaiting;
         }
     }
 
     void Deserializer::handleTypeWaiting(uint8_t byte)
     {
         packet.header.type = byte;
-        state = PacketState::LEN_LSB_WAITING;
+        state = State::lenLsbWaiting;
     }
 
     void Deserializer::handleLengthLsbWaiting(uint8_t byte)
     {
         packet.header.length = byte;
-        state = PacketState::LEN_MSB_WAITING;
+        state = State::lenMsbWaiting;
     }
 
     void Deserializer::handleLengthMsbWaiting(uint8_t byte)
@@ -72,18 +72,18 @@ namespace beecom
         }
         else if (packet.header.length == 0)
         {
-            state = PacketState::CRC_LSB_WAITING;
+            state = State::crcLsbWaiting;
         }
         else
         {
-            state = PacketState::GETTING_PAYLOAD;
+            state = State::gettingPayload;
         }
     }
 
     void Deserializer::handleCRCLowWaiting(uint8_t byte)
     {
         packet.header.crc = byte;
-        state = PacketState::CRC_MSB_WAITING;
+        state = State::crcMsbWaiting;
     }
 
     void Deserializer::handleCRCHighWaiting(uint8_t byte)
@@ -99,7 +99,7 @@ namespace beecom
             packet.payload[payloadCounter++] = byte;
             if (payloadCounter == packet.header.length)
             {
-                state = PacketState::CRC_LSB_WAITING;
+                state = State::crcLsbWaiting;
             }
         }
         else
@@ -126,7 +126,7 @@ namespace beecom
 
     void Deserializer::resetState()
     {
-        state = PacketState::SOP_WAITING;
+        state = State::sopWaiting;
         payloadCounter = 0;
         packet.reset();
     }

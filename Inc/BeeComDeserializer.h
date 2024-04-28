@@ -9,6 +9,18 @@ namespace beecom
     class Deserializer
     {
     public:
+        enum class State
+        {
+            sopWaiting,
+            typeWaiting,
+            lenLsbWaiting,
+            lenMsbWaiting,
+            gettingPayload,
+            crcLsbWaiting,
+            crcMsbWaiting,
+            packetReceived
+        };
+
         Deserializer(CRCFunction crcFunc, uint8_t sop)
             : crcCalculation(crcFunc), sopValue(sop)
         {
@@ -23,7 +35,7 @@ namespace beecom
     private:
         Packet packet;
         size_t payloadCounter = 0;
-        PacketState state = PacketState::SOP_WAITING;
+        State state = State::sopWaiting;
         PacketHandler packetHandler;
         CRCFunction crcCalculation;
         SendFunction sendFunction;

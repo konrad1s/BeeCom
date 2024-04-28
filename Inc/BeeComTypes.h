@@ -22,17 +22,6 @@ namespace beecom
         void reset() { *this = Packet(); }
     };
 
-    enum class PacketState
-    {
-        SOP_WAITING,
-        TYPE_WAITING,
-        LEN_LSB_WAITING,
-        LEN_MSB_WAITING,
-        GETTING_PAYLOAD,
-        CRC_LSB_WAITING,
-        CRC_MSB_WAITING,
-        PACKET_RECEIVED
-    };
 
     using CRCFunction = std::function<uint16_t(const PacketHeader &, const uint8_t *, size_t)>;
     using SendFunction = std::function<void(const Packet &)>;
