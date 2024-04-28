@@ -6,10 +6,10 @@
 
 namespace beecom
 {
-    class Transmitter
+    class Serializer
     {
     public:
-        explicit Transmitter(CRCFunction crcFunc = calculateFullPacketCRC)
+        explicit Serializer(CRCFunction crcFunc = calculateFullPacketCRC)
             : crcCalculation(crcFunc) {}
 
         size_t Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const;

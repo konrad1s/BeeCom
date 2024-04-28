@@ -6,12 +6,11 @@
 
 namespace beecom
 {
-    class Receiver
+    class Deserializer
     {
     public:
-        Receiver(CRCFunction crcFunc, uint8_t sop, SendFunction sendFunc,
-                 InvalidPacketHandler invalidHandler = [](SendFunction) {})
-            : crcCalculation(crcFunc), sopValue(sop), sendFunction(sendFunc), invalidPacketHandler(invalidHandler)
+        Deserializer(CRCFunction crcFunc, uint8_t sop, SendFunction sendFunc)
+            : crcCalculation(crcFunc), sopValue(sop), sendFunction(sendFunc)
         {
         }
 
@@ -28,7 +27,6 @@ namespace beecom
         PacketHandler packetHandler;
         CRCFunction crcCalculation;
         SendFunction sendFunction;
-        InvalidPacketHandler invalidPacketHandler;
         uint8_t sopValue;
 
         void handleStateChange(uint8_t byte);

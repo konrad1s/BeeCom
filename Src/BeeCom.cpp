@@ -9,7 +9,7 @@ namespace beecom
 
         while (byteReceiveFunction(&byte))
         {
-            receiver.Deserialize(&byte, 1);
+            deserializer.Deserialize(&byte, 1);
             receivedCount++;
         }
 
@@ -19,7 +19,7 @@ namespace beecom
     void BeeCOM::send(const Packet& packet)
     {
         uint8_t buffer[MAX_PAYLOAD_SIZE + sizeof(PacketHeader)];
-        size_t size = transmitter.Serialize(packet, buffer, sizeof(buffer));
+        size_t size = serializer.Serialize(packet, buffer, sizeof(buffer));
 
         if (size > 0U)
         {

@@ -5,7 +5,7 @@
 
 namespace beecom
 {
-    constexpr uint8_t MAX_PAYLOAD_SIZE = 200U;
+    constexpr uint16_t MAX_PAYLOAD_SIZE = 2048U;
 
     struct PacketHeader
     {

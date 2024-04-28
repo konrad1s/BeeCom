@@ -4,8 +4,8 @@
 #include <functional>
 #include "BeeComTypes.h"
 #include "BeeComCrc.h"
-#include "BeeComTransmitter.h"
-#include "BeeComReceiver.h"
+#include "BeeComSerializer.h"
+#include "BeeComDeserializer.h"
 
 namespace beecom
 {
@@ -19,16 +19,14 @@ namespace beecom
             ByteReceiveFunction byteReceiver,
             ByteTransmitFunction byteTransmitter,
             CRCFunction crcFunc = calculateFullPacketCRC,
-            uint8_t receiverSop = 0xA5U,
-            InvalidPacketHandler invalidHandler = [](SendFunction) {})
-            : transmitter(crcFunc),
+            uint8_t receiverSop = 0xA5)
+            : serializer(crcFunc),
               byteReceiveFunction(byteReceiver),
               byteTransmitFunction(byteTransmitter),
-              receiver(
+              deserializer(
                   crcFunc, receiverSop,
                   [this](const Packet &packet)
-                  { this->send(packet); },
-                  invalidHandler)
+                  { this->send(packet); })
         {
         }
 
@@ -36,12 +34,12 @@ namespace beecom
         void send(const Packet &packet);
         void setPacketHandler(PacketHandler handler) 
         {
-            receiver.setPacketHandler(handler);
+            deserializer.setPacketHandler(handler);
         }
 
     private:
-        Receiver receiver;
-        Transmitter transmitter;
+        Deserializer deserializer;
+        Serializer serializer;
         ByteReceiveFunction byteReceiveFunction;
         ByteTransmitFunction byteTransmitFunction;
     };

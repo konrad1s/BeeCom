@@ -1,9 +1,9 @@
 #include <cstring>
-#include "BeeComTransmitter.h"
+#include "BeeComSerializer.h"
 
 namespace beecom
 {
-    size_t Transmitter::Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const
+    size_t Serializer::Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const
     {
         if (bufferSize < calculateRequiredSize(packet))
         {
@@ -29,7 +29,7 @@ namespace beecom
         return size;
     }
 
-    size_t Transmitter::calculateRequiredSize(const Packet &packet) const
+    size_t Serializer::calculateRequiredSize(const Packet &packet) const
     {
         return sizeof(packet.header.sop) + sizeof(packet.header.type) +
                sizeof(packet.header.length) + packet.header.length +

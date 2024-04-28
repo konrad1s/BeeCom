@@ -1,9 +1,9 @@
 #include <cstring>
-#include "BeeComReceiver.h"
+#include "BeeComDeserializer.h"
 
 namespace beecom
 {
-    void Receiver::Deserialize(const uint8_t *data, size_t size)
+    void Deserializer::Deserialize(const uint8_t *data, size_t size)
     {
         for (size_t i = 0; i < size; ++i)
         {
@@ -11,7 +11,7 @@ namespace beecom
         }
     }
 
-    void Receiver::handleStateChange(uint8_t byte)
+    void Deserializer::handleStateChange(uint8_t byte)
     {
         switch (state)
         {
@@ -42,7 +42,7 @@ namespace beecom
         }
     }
 
-    void Receiver::handleSOPWaiting(uint8_t byte)
+    void Deserializer::handleSOPWaiting(uint8_t byte)
     {
         if (byte == sopValue)
         {
@@ -51,19 +51,19 @@ namespace beecom
         }
     }
 
-    void Receiver::handleTypeWaiting(uint8_t byte)
+    void Deserializer::handleTypeWaiting(uint8_t byte)
     {
         packet.header.type = byte;
         state = PacketState::LEN_LSB_WAITING;
     }
 
-    void Receiver::handleLengthLsbWaiting(uint8_t byte)
+    void Deserializer::handleLengthLsbWaiting(uint8_t byte)
     {
         packet.header.length = byte;
         state = PacketState::LEN_MSB_WAITING;
     }
 
-    void Receiver::handleLengthMsbWaiting(uint8_t byte)
+    void Deserializer::handleLengthMsbWaiting(uint8_t byte)
     {
         packet.header.length |= static_cast<uint16_t>(byte) << 8;
         if (packet.header.length > MAX_PAYLOAD_SIZE)
@@ -80,19 +80,19 @@ namespace beecom
         }
     }
 
-    void Receiver::handleCRCLowWaiting(uint8_t byte)
+    void Deserializer::handleCRCLowWaiting(uint8_t byte)
     {
         packet.header.crc = byte;
         state = PacketState::CRC_MSB_WAITING;
     }
 
-    void Receiver::handleCRCHighWaiting(uint8_t byte)
+    void Deserializer::handleCRCHighWaiting(uint8_t byte)
     {
         packet.header.crc |= static_cast<uint16_t>(byte) << 8;
         processCompletePacket();
     }
 
-    void Receiver::handleGettingPayload(uint8_t byte)
+    void Deserializer::handleGettingPayload(uint8_t byte)
     {
         if (payloadCounter < MAX_PAYLOAD_SIZE)
         {
@@ -108,7 +108,7 @@ namespace beecom
         }
     }
 
-    void Receiver::processCompletePacket()
+    void Deserializer::processCompletePacket()
     {
         bool crcValid = validateCRC();
         if (packetHandler)
@@ -118,21 +118,17 @@ namespace beecom
         resetState();
     }
 
-    bool Receiver::validateCRC() const
+    bool Deserializer::validateCRC() const
     {
         uint16_t calculatedCRC = crcCalculation(packet.header, packet.payload, packet.header.length);
         return calculatedCRC == packet.header.crc;
     }
 
-    void Receiver::resetState()
+    void Deserializer::resetState()
     {
         state = PacketState::SOP_WAITING;
         payloadCounter = 0;
         packet.reset();
-        if (invalidPacketHandler)
-        {
-            invalidPacketHandler(sendFunction);
-        }
     }
 
 }
