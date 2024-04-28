@@ -13,9 +13,11 @@ namespace beecom
             : crcCalculation(crcFunc) {}
 
         size_t Serialize(const Packet &packet, uint8_t *buffer, size_t bufferSize) const;
+        size_t SerializeHeader(const Packet &packet, uint8_t *buffer) const;
+        size_t SerializeCRC(const Packet &packet, uint8_t *buffer) const;
 
     private:
         CRCFunction crcCalculation;
-        size_t calculateRequiredSize(const Packet &packet) const;
+        size_t CalculateRequiredSize(const Packet &packet) const;
     };
 }

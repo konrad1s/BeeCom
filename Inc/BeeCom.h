@@ -19,19 +19,17 @@ namespace beecom
             ByteReceiveFunction byteReceiver,
             ByteTransmitFunction byteTransmitter,
             CRCFunction crcFunc = calculateFullPacketCRC,
-            uint8_t receiverSop = 0xA5)
+            uint8_t sopValue = 0xA5)
             : serializer(crcFunc),
               byteReceiveFunction(byteReceiver),
               byteTransmitFunction(byteTransmitter),
-              deserializer(
-                  crcFunc, receiverSop,
-                  [this](const Packet &packet)
-                  { this->send(packet); })
+              deserializer(crcFunc, sopValue),
+              sopValue(sopValue)
         {
         }
 
         size_t receive();
-        void send(const Packet &packet);
+        void send(uint8_t packetType, const uint8_t *payload, size_t payloadSize);
         void setPacketHandler(PacketHandler handler) 
         {
             deserializer.setPacketHandler(handler);
@@ -42,5 +40,6 @@ namespace beecom
         Serializer serializer;
         ByteReceiveFunction byteReceiveFunction;
         ByteTransmitFunction byteTransmitFunction;
+        uint8_t sopValue;
     };
 }

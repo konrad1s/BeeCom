@@ -9,8 +9,8 @@ namespace beecom
     class Deserializer
     {
     public:
-        Deserializer(CRCFunction crcFunc, uint8_t sop, SendFunction sendFunc)
-            : crcCalculation(crcFunc), sopValue(sop), sendFunction(sendFunc)
+        Deserializer(CRCFunction crcFunc, uint8_t sop)
+            : crcCalculation(crcFunc), sopValue(sop)
         {
         }
 

@@ -16,14 +16,27 @@ namespace beecom
         return receivedCount;
     }
 
-    void BeeCOM::send(const Packet& packet)
+    void BeeCOM::send(uint8_t packetType, const uint8_t *payload, size_t payloadSize)
     {
-        uint8_t buffer[MAX_PAYLOAD_SIZE + sizeof(PacketHeader)];
-        size_t size = serializer.Serialize(packet, buffer, sizeof(buffer));
+        Packet packet;
+        packet.header.sop = sopValue;
+        packet.header.type = packetType;
+        packet.header.length = static_cast<uint16_t>(payloadSize);
 
-        if (size > 0U)
+        /* Send the header */
+        uint8_t headerBuffer[4];
+        size_t headerSize = serializer.SerializeHeader(packet, headerBuffer);
+        byteTransmitFunction(headerBuffer, headerSize);
+
+        /* Send the payload */
+        if (payloadSize > 0U)
         {
-            byteTransmitFunction(buffer, size);
+            byteTransmitFunction(payload, payloadSize);
         }
+
+        /* Send the CRC */
+        uint8_t crcBuffer[2];
+        size_t crcSize = serializer.SerializeCRC(packet, crcBuffer);
+        byteTransmitFunction(crcBuffer, crcSize);
     }
 }
