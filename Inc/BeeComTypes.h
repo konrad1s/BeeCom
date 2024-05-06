@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include <functional>
+#include <cstddef>
 
 namespace beecom
 {
@@ -23,8 +23,8 @@ namespace beecom
     };
 
 
-    using CRCFunction = std::function<uint16_t(const PacketHeader &, const uint8_t *, size_t)>;
-    using SendFunction = std::function<void(const Packet &)>;
-    using PacketHandler = std::function<void(const Packet &, bool crcValid, SendFunction send)>;
-    using InvalidPacketHandler = std::function<void(SendFunction send)>;
+    typedef uint16_t (*CRCFunction)(const PacketHeader &, const uint8_t *, size_t);
+    typedef void (*SendFunction)(const Packet &);
+    typedef void (*PacketHandler)(const Packet &, bool crcValid, SendFunction send);
+    typedef void (*InvalidPacketHandler)(SendFunction send);
 }

@@ -111,9 +111,9 @@ namespace beecom
     void Deserializer::processCompletePacket()
     {
         bool crcValid = validateCRC();
-        if (packetHandler)
+        if (observer)
         {
-            packetHandler(packet, crcValid, sendFunction);
+            observer->onPacketReceived(packet, crcValid, context);
         }
         resetState();
     }

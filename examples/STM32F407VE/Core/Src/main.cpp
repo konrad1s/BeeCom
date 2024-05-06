@@ -57,6 +57,19 @@ static void MX_USART1_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+class MyPacketObserver : public beecom::IPacketObserver
+{
+public:
+    void onPacketReceived(const beecom::Packet &packet, bool crcValid, void *beeComInstance) override
+    {
+        beecom::BeeCOM *const beeCom = static_cast<beecom::BeeCOM *>(beeComInstance);
+        uint8_t type = 0x02U;
+        uint8_t payload = crcValid ? 0xAA : 0x55;
+        uint16_t payloadSize = 1U;
+
+        beeCom->send(type, &payload, payloadSize);
+    }
+};
 /* USER CODE END 0 */
 
 /**
@@ -89,18 +102,6 @@ int main(void)
     MX_GPIO_Init();
     MX_USART1_UART_Init();
     /* USER CODE BEGIN 2 */
-    beecom::PacketHandler packetHandler = [](const beecom::Packet &packet, bool crcValid, beecom::SendFunction send)
-    {
-        /* If correct packed received send ACK, otherwise send NACK */
-        beecom::Packet ackPacket;
-        ackPacket.header.sop = 0xA5;
-        ackPacket.header.type = 0x02;
-        ackPacket.header.length = 1U;
-        ackPacket.payload[0] = crcValid ? 0xAA : 0x55;
-
-        send(ackPacket);
-    };
-
     auto receive = [](uint8_t *uartRxByte) -> bool
     {
         return (HAL_UART_Receive(&huart1, uartRxByte, 1, 0) == HAL_OK);
@@ -112,7 +113,8 @@ int main(void)
     };
 
     beecom::BeeCOM beecom(receive, transmit);
-    beecom.setPacketHandler(packetHandler);
+    MyPacketObserver observer;
+    beecom.setObserver(&observer);
     /* USER CODE END 2 */
 
     /* Infinite loop */

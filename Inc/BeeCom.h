@@ -1,19 +1,19 @@
 #pragma once
 
 #include <cstdint>
-#include <functional>
 #include "BeeComTypes.h"
 #include "BeeComCrc.h"
 #include "BeeComSerializer.h"
 #include "BeeComDeserializer.h"
+#include "BeeComPacketObserver.h"
 
 namespace beecom
 {
     class BeeCOM
     {
     public:
-        using ByteReceiveFunction = std::function<bool(uint8_t *byte)>;
-        using ByteTransmitFunction = std::function<void(const uint8_t *buffer, size_t size)>;
+        using ByteReceiveFunction = bool (*)(uint8_t* byte);
+        using ByteTransmitFunction = void (*)(const uint8_t* buffer, size_t size);
 
         BeeCOM(
             ByteReceiveFunction byteReceiver,
@@ -30,9 +30,9 @@ namespace beecom
 
         size_t receive();
         void send(uint8_t packetType, const uint8_t *payload, size_t payloadSize);
-        void setPacketHandler(PacketHandler handler) 
+        void setObserver(IPacketObserver *handler)
         {
-            deserializer.setPacketHandler(handler);
+            deserializer.setObserver(handler, this);
         }
 
     private:

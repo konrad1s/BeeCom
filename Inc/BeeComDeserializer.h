@@ -1,8 +1,8 @@
 #pragma once
 
 #include "BeeComTypes.h"
+#include "BeeComPacketObserver.h"
 #include <cstring>
-#include <functional>
 
 namespace beecom
 {
@@ -22,24 +22,25 @@ namespace beecom
         };
 
         Deserializer(CRCFunction crcFunc, uint8_t sop)
-            : crcCalculation(crcFunc), sopValue(sop)
+            : crcCalculation(crcFunc), sopValue(sop), observer(nullptr)
         {
         }
 
         void Deserialize(const uint8_t *data, size_t size);
-        void setPacketHandler(PacketHandler handler)
+        void setObserver(IPacketObserver *obs, void *context)
         {
-            packetHandler = handler;
+            observer = obs;
+            this->context = context;
         }
 
     private:
         Packet packet;
         size_t payloadCounter = 0;
         State state = State::sopWaiting;
-        PacketHandler packetHandler;
         CRCFunction crcCalculation;
-        SendFunction sendFunction;
         uint8_t sopValue;
+        IPacketObserver* observer;
+        void *context;
 
         void handleStateChange(uint8_t byte);
         void handleSOPWaiting(uint8_t byte);

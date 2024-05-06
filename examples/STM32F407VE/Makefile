@@ -58,8 +58,8 @@ Core/Src/system_stm32f4xx.c
 
 CXX_SOURCES = ../../Src/BeeCom.cpp \
 ../../Src/BeeComCrc.cpp \
-../../Src/BeeComReceiver.cpp \
-../../Src/BeeComTransmitter.cpp \
+../../Src/BeeComDeserializer.cpp \
+../../Src/BeeComSerializer.cpp \
 Core/Src/main.cpp \
 
 # ASM sources
