@@ -60,14 +60,51 @@ static void MX_USART1_UART_Init(void);
 class MyPacketObserver : public beecom::IPacketObserver
 {
 public:
+    enum class PacketType : uint8_t
+    {
+        ping = 0x01U,
+        pong = 0x02U,
+        invalidPacket = 0xFFU
+    };
+
     void onPacketReceived(const beecom::Packet &packet, bool crcValid, void *beeComInstance) override
     {
         beecom::BeeCOM *const beeCom = static_cast<beecom::BeeCOM *>(beeComInstance);
-        uint8_t type = 0x02U;
-        uint8_t payload = crcValid ? 0xAA : 0x55;
-        uint16_t payloadSize = 1U;
 
-        beeCom->send(type, &payload, payloadSize);
+        if (!crcValid)
+        {
+            handleInvalidPacket(packet, beeCom);
+            return;
+        }
+
+        switch (static_cast<PacketType>(packet.header.type))
+        {
+        case PacketType::ping:
+            handlePing(packet, beeCom);
+            break;
+        case PacketType::pong:
+            handlePong(packet, beeCom);
+            break;
+        default:
+            handleInvalidPacket(packet, beeCom);
+            break;
+        }
+    }
+
+private:
+    void handlePing(const beecom::Packet &packet, beecom::BeeCOM *beeCom)
+    {
+        beeCom->send(static_cast<uint8_t>(PacketType::pong), nullptr, 0U);
+    }
+
+    void handlePong(const beecom::Packet &packet, beecom::BeeCOM *beeCom)
+    {
+        beeCom->send(static_cast<uint8_t>(PacketType::ping), nullptr, 0U);
+    }
+
+    void handleInvalidPacket(const beecom::Packet &packet, beecom::BeeCOM *beeCom)
+    {
+        beeCom->send(static_cast<uint8_t>(PacketType::invalidPacket), nullptr, 0U);
     }
 };
 /* USER CODE END 0 */
