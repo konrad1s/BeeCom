@@ -41,23 +41,56 @@ The BeeCom packet is a structured data format designed for efficient and reliabl
 
 ## BeeCOM with STM32 and UART Example Usage
 
-This example demonstrates integrating the BeeCOM library with an STM32 microcontroller for UART communication. It includes setting up packet handlers, byte receive and transmit functions, and the main execution loop.
+This example demonstrates integrating the BeeCOM library with an STM32 microcontroller for UART communication. The setup includes initializing packet handlers through an observer pattern, configuring byte receive and transmit functions, and maintaining the main execution loop.
 
 - Ensure you have the HAL library configured for UART communication (huart1 in this example).
 - Place the BeeCOM library files in your project directory.
 - Include the BeeCOM header (#include "BeeCom.h") in your main file.
 - Insert the example code in the appropriate sections of your main function, typically after initializing the system and peripherals.
 
-A lambda function is used as the packet handler. It constructs and sends an acknowledgment packet (ackPacket) depending on the CRC check result.
+### Observer Pattern Implementation:
 ```cpp
-beecom::PacketHandler packetHandler = [](const beecom::Packet &packet, bool crcValid, beecom::SendFunction send) {
-  beecom::Packet ackPacket;
-  ackPacket.header.sop = 0x55;
-  ackPacket.header.type = 0x01;
-  ackPacket.header.length = 1U;
-  ackPacket.payload[0] = crcValid ? 0x5A : 0xA5;
+class MyPacketObserver : public beecom::IPacketObserver {
+public:
+    enum class PacketType : uint8_t {
+        ping = 0x01U,
+        pong = 0x02U,
+        invalidPacket = 0xFFU
+    };
 
-  send(ackPacket);
+    void onPacketReceived(const beecom::Packet &packet, bool crcValid, void *beeComInstance) override {
+        beecom::BeeCOM *const beeCom = static_cast<beecom::BeeCOM *>(beeComInstance);
+
+        if (!crcValid) {
+            handleInvalidPacket(packet, beeCom);
+            return;
+        }
+
+        switch (static_cast<PacketType>(packet.header.type)) {
+        case PacketType::ping:
+            handlePing(packet, beeCom);
+            break;
+        case PacketType::pong:
+            handlePong(packet, beeCom);
+            break;
+        default:
+            handleInvalidPacket(packet, beeCom);
+            break;
+        }
+    }
+
+private:
+    void handlePing(const beecom::Packet &packet, beecom::BeeCOM *beeCom) {
+        beeCom->send(static_cast<uint8_t>(PacketType::pong), nullptr, 0U);
+    }
+
+    void handlePong(const beecom::Packet &packet, beecom::BeeCOM *beeCom) {
+        beeCom->send(static_cast<uint8_t>(PacketType::ping), nullptr, 0U);
+    }
+
+    void handleInvalidPacket(const beecom::Packet &packet, beecom::BeeCOM *beeCom) {
+        beeCom->send(static_cast<uint8_t>(PacketType::invalidPacket), nullptr, 0U);
+    }
 };
 ```
 Byte Receive and Transmit Functions:
