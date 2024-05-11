@@ -7,42 +7,42 @@ namespace beecom
     {
         for (size_t i = 0; i < size; ++i)
         {
-            handleStateChange(data[i]);
+            HandleStateChange(data[i]);
         }
     }
 
-    void Deserializer::handleStateChange(uint8_t byte)
+    void Deserializer::HandleStateChange(uint8_t byte)
     {
         switch (state)
         {
         case State::sopWaiting:
-            handleSOPWaiting(byte);
+            HandleSOPWaiting(byte);
             break;
         case State::typeWaiting:
-            handleTypeWaiting(byte);
+            HandleTypeWaiting(byte);
             break;
         case State::lenLsbWaiting:
-            handleLengthLsbWaiting(byte);
+            HandleLengthLsbWaiting(byte);
             break;
         case State::lenMsbWaiting:
-            handleLengthMsbWaiting(byte);
+            HandleLengthMsbWaiting(byte);
             break;
         case State::gettingPayload:
-            handleGettingPayload(byte);
+            HandleGettingPayload(byte);
             break;
         case State::crcLsbWaiting:
-            handleCRCLowWaiting(byte);
+            HandleCRCLowWaiting(byte);
             break;
         case State::crcMsbWaiting:
-            handleCRCHighWaiting(byte);
+            HandleCRCHighWaiting(byte);
             break;
         default:
-            resetState();
+            ResetState();
             break;
         }
     }
 
-    void Deserializer::handleSOPWaiting(uint8_t byte)
+    void Deserializer::HandleSOPWaiting(uint8_t byte)
     {
         if (byte == sopValue)
         {
@@ -51,24 +51,24 @@ namespace beecom
         }
     }
 
-    void Deserializer::handleTypeWaiting(uint8_t byte)
+    void Deserializer::HandleTypeWaiting(uint8_t byte)
     {
         packet.header.type = byte;
         state = State::lenLsbWaiting;
     }
 
-    void Deserializer::handleLengthLsbWaiting(uint8_t byte)
+    void Deserializer::HandleLengthLsbWaiting(uint8_t byte)
     {
         packet.header.length = byte;
         state = State::lenMsbWaiting;
     }
 
-    void Deserializer::handleLengthMsbWaiting(uint8_t byte)
+    void Deserializer::HandleLengthMsbWaiting(uint8_t byte)
     {
         packet.header.length |= static_cast<uint16_t>(byte) << 8;
         if (packet.header.length > MAX_PAYLOAD_SIZE)
         {
-            resetState();
+            ResetState();
         }
         else if (packet.header.length == 0)
         {
@@ -80,55 +80,55 @@ namespace beecom
         }
     }
 
-    void Deserializer::handleCRCLowWaiting(uint8_t byte)
+    void Deserializer::HandleCRCLowWaiting(uint8_t byte)
     {
         packet.header.crc = byte;
         state = State::crcMsbWaiting;
     }
 
-    void Deserializer::handleCRCHighWaiting(uint8_t byte)
+    void Deserializer::HandleCRCHighWaiting(uint8_t byte)
     {
         packet.header.crc |= static_cast<uint16_t>(byte) << 8;
-        processCompletePacket();
+        ProcessCompletePacket();
     }
 
-    void Deserializer::handleGettingPayload(uint8_t byte)
+    void Deserializer::HandleGettingPayload(uint8_t byte)
     {
-        if (true == buffer.append(byte))
+        if (true == buffer.Append(byte))
         {
-            if (buffer.getCurrentSize() == packet.header.length)
+            if (buffer.GetCurrentSize() == packet.header.length)
             {
                 state = State::crcLsbWaiting;
             }
         }
         else
         {
-            resetState();
+            ResetState();
         }
     }
 
-    void Deserializer::processCompletePacket()
+    void Deserializer::ProcessCompletePacket()
     {
-        bool crcValid = validateCRC();
+        bool crcValid = ValidateCRC();
         if (observer)
         {
-            packet.payload = buffer.getBuffer();
-            observer->onPacketReceived(packet, crcValid, context);
+            packet.payload = buffer.GetBuffer();
+            observer->OnPacketReceived(packet, crcValid, context);
         }
-        resetState();
+        ResetState();
     }
 
-    bool Deserializer::validateCRC() const
+    bool Deserializer::ValidateCRC() const
     {
-        uint16_t calculatedCRC = crcCalculation(packet.header, buffer.getBuffer(), packet.header.length);
+        uint16_t calculatedCRC = crcCalculation(packet.header, buffer.GetBuffer(), packet.header.length);
         return calculatedCRC == packet.header.crc;
     }
 
-    void Deserializer::resetState()
+    void Deserializer::ResetState()
     {
         state = State::sopWaiting;
-        buffer.clear();
-        packet.reset();
+        buffer.Clear();
+        packet.Reset();
     }
 
 }

@@ -20,7 +20,7 @@ namespace beecom
             ByteReceiveFunction byteReceiver,
             ByteTransmitFunction byteTransmitter,
             BeeComBuffer& buffer,
-            CRCFunction crcFunc = calculateFullPacketCRC,
+            CRCFunction crcFunc = CalculateFullPacketCRC,
             uint8_t sopValue = 0xA5U)
             : serializer(crcFunc),
               byteReceiveFunction(byteReceiver),
@@ -30,11 +30,11 @@ namespace beecom
         {
         }
 
-        size_t receive();
-        void send(uint8_t packetType, const uint8_t *payload, size_t payloadSize);
-        void setObserver(IPacketObserver *handler)
+        size_t Receive();
+        void Send(uint8_t packetType, const uint8_t *payload, size_t payloadSize);
+        void SetObserver(IPacketObserver *handler)
         {
-            deserializer.setObserver(handler, this);
+            deserializer.SetObserver(handler, this);
         }
 
     private:

@@ -7,6 +7,6 @@ namespace beecom
     {
     public:
         virtual ~IPacketObserver() = default;
-        virtual void onPacketReceived(const Packet &packet, bool crcValid, void *beeComInstance) = 0;
+        virtual void OnPacketReceived(const Packet &packet, bool crcValid, void *beeComInstance) = 0;
     };
 }

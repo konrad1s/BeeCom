@@ -27,7 +27,7 @@ namespace beecom
 {
     static constexpr uint16_t lookupTable[256] = {CRC16AUGCCITT_LOOKUP};
 
-    uint16_t updateCRC(uint16_t currentCRC, uint8_t dataByte);
-    uint16_t calculateFullPacketCRC(const PacketHeader &header, const uint8_t *payload, size_t payloadLength);
+    uint16_t UpdateCRC(uint16_t currentCRC, uint8_t dataByte);
+    uint16_t CalculateFullPacketCRC(const PacketHeader &header, const uint8_t *payload, size_t payloadLength);
 
 } // namespace beecom

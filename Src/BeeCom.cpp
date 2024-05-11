@@ -2,7 +2,7 @@
 
 namespace beecom
 {
-    size_t BeeCOM::receive()
+    size_t BeeCOM::Receive()
     {
         uint8_t byte;
         size_t receivedCount = 0;
@@ -16,12 +16,13 @@ namespace beecom
         return receivedCount;
     }
 
-    void BeeCOM::send(uint8_t packetType, const uint8_t *payload, size_t payloadSize)
+    void BeeCOM::Send(uint8_t packetType, const uint8_t *payload, size_t payloadSize)
     {
         Packet packet;
         packet.header.sop = sopValue;
         packet.header.type = packetType;
         packet.header.length = static_cast<uint16_t>(payloadSize);
+        packet.payload = const_cast<uint8_t *>(payload);
 
         /* Send the header */
         uint8_t headerBuffer[4];

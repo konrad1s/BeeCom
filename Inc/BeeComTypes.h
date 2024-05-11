@@ -19,12 +19,9 @@ namespace beecom
     {
         PacketHeader header;
         uint8_t *payload;
-        void reset() { *this = Packet(); }
+        void Reset() { *this = Packet(); }
     };
-
 
     typedef uint16_t (*CRCFunction)(const PacketHeader &, const uint8_t *, size_t);
     typedef void (*SendFunction)(const Packet &);
-    typedef void (*PacketHandler)(const Packet &, bool crcValid, SendFunction send);
-    typedef void (*InvalidPacketHandler)(SendFunction send);
 }

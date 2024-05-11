@@ -13,22 +13,22 @@ namespace beecom
         {
         }
 
-        uint8_t *getBuffer() const
+        uint8_t *GetBuffer() const
         {
             return const_cast<uint8_t *>(buffer);
         }
 
-        size_t getCurrentSize() const
+        size_t GetCurrentSize() const
         {
             return currentSize;
         }
 
-        void clear()
+        void Clear()
         {
             currentSize = 0U;
         }
 
-        bool append(const uint8_t *data, size_t size)
+        bool Append(const uint8_t *data, size_t size)
         {
             if (currentSize + size > bufferSize)
             {
@@ -41,7 +41,7 @@ namespace beecom
             return true;
         }
 
-        bool append(uint8_t byte)
+        bool Append(uint8_t byte)
         {
             if (currentSize + 1U > bufferSize)
             {

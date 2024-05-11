@@ -58,7 +58,7 @@ public:
         invalidPacket = 0xFFU
     };
 
-    void onPacketReceived(const beecom::Packet &packet, bool crcValid, void *beeComInstance) override {
+    void OnPacketReceived(const beecom::Packet &packet, bool crcValid, void *beeComInstance) override {
         beecom::BeeCOM *const beeCom = static_cast<beecom::BeeCOM *>(beeComInstance);
 
         if (!crcValid) {
@@ -81,15 +81,15 @@ public:
 
 private:
     void handlePing(const beecom::Packet &packet, beecom::BeeCOM *beeCom) {
-        beeCom->send(static_cast<uint8_t>(PacketType::pong), nullptr, 0U);
+        beeCom->Send(static_cast<uint8_t>(PacketType::pong), nullptr, 0U);
     }
 
     void handlePong(const beecom::Packet &packet, beecom::BeeCOM *beeCom) {
-        beeCom->send(static_cast<uint8_t>(PacketType::ping), nullptr, 0U);
+        beeCom->Send(static_cast<uint8_t>(PacketType::ping), nullptr, 0U);
     }
 
     void handleInvalidPacket(const beecom::Packet &packet, beecom::BeeCOM *beeCom) {
-        beeCom->send(static_cast<uint8_t>(PacketType::invalidPacket), nullptr, 0U);
+        beeCom->Send(static_cast<uint8_t>(PacketType::invalidPacket), nullptr, 0U);
     }
 };
 ```
@@ -107,10 +107,10 @@ auto transmit = [](const uint8_t *buffer, size_t size) {
 
 beecom::BeeCOM beecom(packetHandler, receive, transmit);
 ```
-The while (1) loop continuously calls beecom.receive() to process incoming bytes and handle them according to the defined packet handler.
+The while (1) loop continuously calls beecom.Receive() to process incoming bytes and handle them according to the defined packet handler.
 ```cpp
 while (1) {
-  beecom.receive();
+  beecom.Receive();
 }
 ```
 

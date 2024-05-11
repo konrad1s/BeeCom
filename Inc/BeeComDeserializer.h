@@ -28,7 +28,7 @@ namespace beecom
         }
 
         void Deserialize(const uint8_t *data, size_t size);
-        void setObserver(IPacketObserver *obs, void *context)
+        void SetObserver(IPacketObserver *obs, void *context)
         {
             observer = obs;
             this->context = context;
@@ -43,16 +43,16 @@ namespace beecom
         IPacketObserver* observer;
         void *context;
 
-        void handleStateChange(uint8_t byte);
-        void handleSOPWaiting(uint8_t byte);
-        void handleTypeWaiting(uint8_t byte);
-        void handleLengthLsbWaiting(uint8_t byte);
-        void handleLengthMsbWaiting(uint8_t byte);
-        void handleCRCLowWaiting(uint8_t byte);
-        void handleCRCHighWaiting(uint8_t byte);
-        void handleGettingPayload(uint8_t byte);
-        void processCompletePacket();
-        bool validateCRC() const;
-        void resetState();
+        void HandleStateChange(uint8_t byte);
+        void HandleSOPWaiting(uint8_t byte);
+        void HandleTypeWaiting(uint8_t byte);
+        void HandleLengthLsbWaiting(uint8_t byte);
+        void HandleLengthMsbWaiting(uint8_t byte);
+        void HandleCRCLowWaiting(uint8_t byte);
+        void HandleCRCHighWaiting(uint8_t byte);
+        void HandleGettingPayload(uint8_t byte);
+        void ProcessCompletePacket();
+        bool ValidateCRC() const;
+        void ResetState();
     };
 }

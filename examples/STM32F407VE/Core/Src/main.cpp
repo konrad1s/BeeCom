@@ -67,7 +67,7 @@ public:
         invalidPacket = 0xFFU
     };
 
-    void onPacketReceived(const beecom::Packet &packet, bool crcValid, void *beeComInstance) override
+    void OnPacketReceived(const beecom::Packet &packet, bool crcValid, void *beeComInstance) override
     {
         beecom::BeeCOM *const beeCom = static_cast<beecom::BeeCOM *>(beeComInstance);
 
@@ -94,17 +94,17 @@ public:
 private:
     void handlePing(const beecom::Packet &packet, beecom::BeeCOM *beeCom)
     {
-        beeCom->send(static_cast<uint8_t>(PacketType::pong), nullptr, 0U);
+        beeCom->Send(static_cast<uint8_t>(PacketType::pong), nullptr, 0U);
     }
 
     void handlePong(const beecom::Packet &packet, beecom::BeeCOM *beeCom)
     {
-        beeCom->send(static_cast<uint8_t>(PacketType::ping), nullptr, 0U);
+        beeCom->Send(static_cast<uint8_t>(PacketType::ping), nullptr, 0U);
     }
 
     void handleInvalidPacket(const beecom::Packet &packet, beecom::BeeCOM *beeCom)
     {
-        beeCom->send(static_cast<uint8_t>(PacketType::invalidPacket), nullptr, 0U);
+        beeCom->Send(static_cast<uint8_t>(PacketType::invalidPacket), nullptr, 0U);
     }
 };
 /* USER CODE END 0 */
@@ -155,14 +155,14 @@ int main(void)
 
     beecom::BeeCOM beecom(receive, transmit, beecomBuffer);
     MyPacketObserver observer;
-    beecom.setObserver(&observer);
+    beecom.SetObserver(&observer);
     /* USER CODE END 2 */
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
     while (1)
     {
-        beecom.receive();
+        beecom.Receive();
 
         /* USER CODE END WHILE */
 
