@@ -2,6 +2,7 @@
 
 #include "BeeComTypes.h"
 #include "BeeComPacketObserver.h"
+#include "BeeComBuffer.h"
 #include <cstring>
 
 namespace beecom
@@ -21,8 +22,8 @@ namespace beecom
             packetReceived
         };
 
-        Deserializer(CRCFunction crcFunc, uint8_t sop)
-            : crcCalculation(crcFunc), sopValue(sop), observer(nullptr)
+        Deserializer(BeeComBuffer &buffer, CRCFunction crcFunc, uint8_t sop)
+            : buffer(buffer), crcCalculation(crcFunc), sopValue(sop), observer(nullptr), context(nullptr)
         {
         }
 
@@ -34,8 +35,8 @@ namespace beecom
         }
 
     private:
+        BeeComBuffer &buffer;
         Packet packet;
-        size_t payloadCounter = 0;
         State state = State::sopWaiting;
         CRCFunction crcCalculation;
         uint8_t sopValue;

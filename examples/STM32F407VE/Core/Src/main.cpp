@@ -149,7 +149,11 @@ int main(void)
         HAL_UART_Transmit(&huart1, const_cast<uint8_t *>(buffer), size, 100);
     };
 
-    beecom::BeeCOM beecom(receive, transmit);
+    constexpr size_t bufferSize = 1024;
+    uint8_t buffer[bufferSize];
+    beecom::BeeComBuffer beecomBuffer(buffer, bufferSize);
+
+    beecom::BeeCOM beecom(receive, transmit, beecomBuffer);
     MyPacketObserver observer;
     beecom.setObserver(&observer);
     /* USER CODE END 2 */

@@ -94,10 +94,9 @@ namespace beecom
 
     void Deserializer::handleGettingPayload(uint8_t byte)
     {
-        if (payloadCounter < MAX_PAYLOAD_SIZE)
+        if (true == buffer.append(byte))
         {
-            packet.payload[payloadCounter++] = byte;
-            if (payloadCounter == packet.header.length)
+            if (buffer.getCurrentSize() == packet.header.length)
             {
                 state = State::crcLsbWaiting;
             }
@@ -113,6 +112,7 @@ namespace beecom
         bool crcValid = validateCRC();
         if (observer)
         {
+            packet.payload = buffer.getBuffer();
             observer->onPacketReceived(packet, crcValid, context);
         }
         resetState();
@@ -120,14 +120,14 @@ namespace beecom
 
     bool Deserializer::validateCRC() const
     {
-        uint16_t calculatedCRC = crcCalculation(packet.header, packet.payload, packet.header.length);
+        uint16_t calculatedCRC = crcCalculation(packet.header, buffer.getBuffer(), packet.header.length);
         return calculatedCRC == packet.header.crc;
     }
 
     void Deserializer::resetState()
     {
         state = State::sopWaiting;
-        payloadCounter = 0;
+        buffer.clear();
         packet.reset();
     }
 

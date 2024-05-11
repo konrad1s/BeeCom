@@ -18,7 +18,7 @@ namespace beecom
     struct Packet
     {
         PacketHeader header;
-        uint8_t payload[MAX_PAYLOAD_SIZE] = {};
+        uint8_t *payload;
         void reset() { *this = Packet(); }
     };
 

@@ -6,6 +6,7 @@
 #include "BeeComSerializer.h"
 #include "BeeComDeserializer.h"
 #include "BeeComPacketObserver.h"
+#include "BeeComBuffer.h"
 
 namespace beecom
 {
@@ -18,12 +19,13 @@ namespace beecom
         BeeCOM(
             ByteReceiveFunction byteReceiver,
             ByteTransmitFunction byteTransmitter,
+            BeeComBuffer& buffer,
             CRCFunction crcFunc = calculateFullPacketCRC,
-            uint8_t sopValue = 0xA5)
+            uint8_t sopValue = 0xA5U)
             : serializer(crcFunc),
               byteReceiveFunction(byteReceiver),
               byteTransmitFunction(byteTransmitter),
-              deserializer(crcFunc, sopValue),
+              deserializer(buffer, crcFunc, sopValue),
               sopValue(sopValue)
         {
         }
