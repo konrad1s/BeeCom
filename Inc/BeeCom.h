@@ -22,9 +22,9 @@ namespace beecom
             BeeComBuffer& buffer,
             CRCFunction crcFunc = CalculateFullPacketCRC,
             uint8_t sopValue = 0xA5U)
-            : serializer(crcFunc),
-              byteReceiveFunction(byteReceiver),
+            : byteReceiveFunction(byteReceiver),
               byteTransmitFunction(byteTransmitter),
+              serializer(crcFunc),
               deserializer(buffer, crcFunc, sopValue),
               sopValue(sopValue)
         {
@@ -38,10 +38,10 @@ namespace beecom
         }
 
     private:
-        Deserializer deserializer;
-        Serializer serializer;
         ByteReceiveFunction byteReceiveFunction;
         ByteTransmitFunction byteTransmitFunction;
+        Serializer serializer;
+        Deserializer deserializer;
         uint8_t sopValue;
     };
 }
