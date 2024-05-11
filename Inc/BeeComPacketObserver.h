@@ -1,12 +1,11 @@
 #pragma once
 #include "BeeComTypes.h"
 
-namespace beecom
+namespace beecom {
+class IPacketObserver
 {
-    class IPacketObserver
-    {
-    public:
-        virtual ~IPacketObserver() = default;
-        virtual void OnPacketReceived(const Packet &packet, bool crcValid, void *beeComInstance) = 0;
-    };
-}
+  public:
+    virtual ~IPacketObserver() = default;
+    virtual void OnPacketReceived(const Packet& packet, bool crcValid, void* beeComInstance) = 0;
+};
+} // namespace beecom

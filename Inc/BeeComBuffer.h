@@ -3,60 +3,56 @@
 #include <cstdint>
 #include <cstring>
 
-namespace beecom
+namespace beecom {
+class BeeComBuffer
 {
-    class BeeComBuffer
+  public:
+    BeeComBuffer(uint8_t* buffer, size_t size) : buffer(buffer), bufferSize(size), currentSize(0) {}
+
+    uint8_t* GetBuffer() const
     {
-    public:
-        BeeComBuffer(uint8_t *buffer, size_t size)
-            : buffer(buffer), bufferSize(size), currentSize(0)
+        return const_cast<uint8_t*>(buffer);
+    }
+
+    size_t GetCurrentSize() const
+    {
+        return currentSize;
+    }
+
+    void Clear()
+    {
+        currentSize = 0U;
+    }
+
+    bool Append(const uint8_t* data, size_t size)
+    {
+        if (currentSize + size > bufferSize)
         {
+            return false;
         }
 
-        uint8_t *GetBuffer() const
+        memcpy(buffer + currentSize, data, size);
+        currentSize += size;
+
+        return true;
+    }
+
+    bool Append(uint8_t byte)
+    {
+        if (currentSize + 1U > bufferSize)
         {
-            return const_cast<uint8_t *>(buffer);
+            return false;
         }
 
-        size_t GetCurrentSize() const
-        {
-            return currentSize;
-        }
+        buffer[currentSize] = byte;
+        currentSize++;
 
-        void Clear()
-        {
-            currentSize = 0U;
-        }
+        return true;
+    }
 
-        bool Append(const uint8_t *data, size_t size)
-        {
-            if (currentSize + size > bufferSize)
-            {
-                return false;
-            }
-
-            memcpy(buffer + currentSize, data, size);
-            currentSize += size;
-
-            return true;
-        }
-
-        bool Append(uint8_t byte)
-        {
-            if (currentSize + 1U > bufferSize)
-            {
-                return false;
-            }
-
-            buffer[currentSize] = byte;
-            currentSize++;
-
-            return true;
-        }
-
-    private:
-        uint8_t *buffer;
-        size_t bufferSize;
-        size_t currentSize;
-    };
+  private:
+    uint8_t* buffer;
+    size_t bufferSize;
+    size_t currentSize;
+};
 } // namespace beecom
