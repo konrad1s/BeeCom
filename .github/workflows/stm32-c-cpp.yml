@@ -1,22 +1,48 @@
-name: CI for STM32 Project
+name: BeeCom CI
 
 on:
   push:
+    branches: 
+      - main
+      - develop
   pull_request:
-    branches: [ main ]
+    branches: 
+      - main
+      - develop
 
 jobs:
-  build:
+  format-check:
     runs-on: ubuntu-latest
+    name: Check Code Formatting
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up environment
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-arm-none-eabi
-        sudo apt-get install -y make
-    - name: Build project
-      run: |
-        cd examples/STM32F407VE
-        make all
+      - uses: actions/checkout@v2
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      - name: Check code style
+        run: |
+          # Check the formatting of C source files in the Inc and Src directories
+          find {Inc,Src} -type f \( -iname "*.c" -o -iname "*.h" \) -exec clang-format -style=file -i {} \;
+          # Fail the job if any formatting inconsistencies are found
+          git diff --exit-code || (echo "Code formatting issues detected." && git diff && exit 1)
+
+  build:
+    needs: format-check
+    runs-on: ubuntu-latest
+    name: Build Project
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up build environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi
+          sudo apt-get install -y make
+
+      - name: Compile project
+        run: |
+          cd examples/STM32F407VE
+          make all
