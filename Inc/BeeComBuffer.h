@@ -9,51 +9,12 @@ class BeeComBuffer
   public:
     BeeComBuffer(uint8_t* buffer, size_t size) : buffer(buffer), bufferSize(size), currentSize(0) {}
 
-    uint8_t* GetBuffer() const
-    {
-        return const_cast<uint8_t*>(buffer);
-    }
-
-    size_t GetCurrentSize() const
-    {
-        return currentSize;
-    }
-
-    size_t GetBufferSize() const
-    {
-        return bufferSize;
-    }
-
-    void Clear()
-    {
-        currentSize = 0U;
-    }
-
-    bool Append(const uint8_t* data, size_t size)
-    {
-        if (currentSize + size > bufferSize)
-        {
-            return false;
-        }
-
-        memcpy(buffer + currentSize, data, size);
-        currentSize += size;
-
-        return true;
-    }
-
-    bool Append(uint8_t byte)
-    {
-        if (currentSize + 1U > bufferSize)
-        {
-            return false;
-        }
-
-        buffer[currentSize] = byte;
-        currentSize++;
-
-        return true;
-    }
+    uint8_t* GetBuffer() const;
+    size_t GetCurrentSize() const;
+    size_t GetBufferSize() const;
+    void Clear();
+    bool Append(const uint8_t* data, size_t size);
+    bool Append(uint8_t byte);
 
   private:
     uint8_t* buffer;

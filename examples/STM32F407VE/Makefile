@@ -60,6 +60,7 @@ CXX_SOURCES = ../../Src/BeeCom.cpp \
 ../../Src/BeeComCrc.cpp \
 ../../Src/BeeComDeserializer.cpp \
 ../../Src/BeeComSerializer.cpp \
+../../Src/BeeComBuffer.cpp \
 Core/Src/main.cpp \
 
 # ASM sources

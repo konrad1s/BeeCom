@@ -18,13 +18,11 @@ class BeeCOM
     BeeCOM(
         ByteReceiveFunction byteReceiver,
         ByteTransmitFunction byteTransmitter,
-        BeeComBuffer& buffer,
-        uint8_t sopValue = 0xA5U) :
+        BeeComBuffer& buffer) :
         byteReceiveFunction(byteReceiver),
         byteTransmitFunction(byteTransmitter),
         serializer(),
-        deserializer(buffer),
-        sopValue(sopValue)
+        deserializer(buffer)
     {
     }
 
@@ -40,6 +38,5 @@ class BeeCOM
     ByteTransmitFunction byteTransmitFunction;
     Serializer serializer;
     Deserializer deserializer;
-    uint8_t sopValue;
 };
 } // namespace beecom

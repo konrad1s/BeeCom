@@ -21,10 +21,7 @@ class Deserializer
         packetReceived
     };
 
-    Deserializer(BeeComBuffer& buffer) :
-        buffer(buffer), observer(nullptr), context(nullptr)
-    {
-    }
+    Deserializer(BeeComBuffer& buffer) : buffer(buffer), observer(nullptr), context(nullptr) {}
 
     void Deserialize(const uint8_t* data, size_t size);
     void SetObserver(IPacketObserver* obs, void* context)

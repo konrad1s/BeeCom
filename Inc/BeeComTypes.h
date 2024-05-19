@@ -25,4 +25,6 @@ struct Packet
 
 typedef uint16_t (*CRCFunction)(const PacketHeader&, const uint8_t*, size_t);
 typedef void (*SendFunction)(const Packet&);
+
+constexpr uint8_t sopValue = 0xA5U;
 } // namespace beecom
