@@ -7,7 +7,7 @@ BeeCOM is a lightweight, efficient, and easy-to-use C++ library designed for com
 ## Key Features
 
 - **Packet-Based Communication:** Efficiently converts structured data into a serial stream for transmission and vice versa, ensuring data integrity and compatibility across different platforms.
-- **CRC Validation:** Offers support for multiple CRC algorithms, enhancing data integrity checks to suit different requirements and scenarios.
+- **CRC Validation:** Offers support for CRC data integrity checks.
 - **Serialization and Deserialization:** Automatically convert between packets and byte arrays for transmission and reception.
 - **Customizable Transport Layer:** Define your own byte receive and transmit functions to integrate with any physical layer protocol.
 - **Observer Pattern for Event Handling** Implements the observer design pattern to allow for easy notification and handling of communication events, making the system highly extensible and adaptable to various use cases.
@@ -38,7 +38,7 @@ The BeeCom packet is a structured data format designed for efficient and reliabl
         Used by the receiver to detect errors in the packet.
 
 ### Example Packet:
-![example_packet](https://github.com/konrad1s/BeeCom/blob/master/examples/uart_packet/beecom_packet.png)
+![example_packet](https://github.com/konrad1s/BeeCom/blob/master/pictures/beecom_packet.png)
 
 # Getting Started
 Before you begin, ensure you have the following:
@@ -151,3 +151,5 @@ beecom.Send(packetType, payload, sizeof(payload));
 
 [BeeCOM Python script example](https://github.com/konrad1s/BeeCom/tree/master/examples/python_script) demonstrates how to send and receive packets over UART (Universal Asynchronous Receiver/Transmitter) communication in Python. The script is designed to work with microcontrollers and other devices that support UART communication, making it a valuable tool for developers working on embedded systems, IoT devices, and similar projects.
 
+## Class diagram
+![class_diagram](https://github.com/konrad1s/BeeCom/blob/master/pictures/class_diagram.png)
