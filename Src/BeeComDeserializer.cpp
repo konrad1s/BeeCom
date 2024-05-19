@@ -109,10 +109,11 @@ void Deserializer::HandleGettingPayload(uint8_t byte)
 
 void Deserializer::ProcessCompletePacket()
 {
+    packet.payload = buffer.GetBuffer();
     bool crcValid = ValidateCRC();
+
     if (observer)
     {
-        packet.payload = buffer.GetBuffer();
         observer->OnPacketReceived(packet, crcValid, context);
     }
     ResetState();
@@ -121,7 +122,7 @@ void Deserializer::ProcessCompletePacket()
 bool Deserializer::ValidateCRC() const
 {
     BeeComCrc crcCalculator;
-    uint16_t crc = crcCalculator.CalculateFullPacketCRC(packet.header, buffer.GetBuffer(), packet.header.length);
+    uint16_t crc = crcCalculator.CalculateFullPacketCRC(packet);
 
     return crc == packet.header.crc;
 }

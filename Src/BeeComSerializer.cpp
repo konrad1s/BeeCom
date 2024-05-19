@@ -31,7 +31,7 @@ size_t Serializer::SerializeHeader(const Packet& packet, uint8_t* buffer) const
 size_t Serializer::SerializeCRC(const Packet& packet, uint8_t* buffer) const
 {
     BeeComCrc crcCalculator;
-    uint16_t crc = crcCalculator.CalculateFullPacketCRC(packet.header, packet.payload, packet.header.length);
+    uint16_t crc = crcCalculator.CalculateFullPacketCRC(packet);
 
     buffer[0] = static_cast<uint8_t>(crc & 0xFFU);
     buffer[1] = static_cast<uint8_t>((crc >> 8U) & 0xFFU);

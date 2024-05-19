@@ -15,13 +15,15 @@ void BeeComCrc::UpdateCRC(const uint8_t* data, size_t length)
     }
 }
 
-uint16_t BeeComCrc::CalculateFullPacketCRC(const PacketHeader& header, const uint8_t* payload, size_t payloadLength)
+uint16_t BeeComCrc::CalculateFullPacketCRC(const Packet& packet)
 {
+    const PacketHeader& header = packet.header;
+
     UpdateCRC(header.sop);
     UpdateCRC(header.type);
-    UpdateCRC(header.length & 0xFF);
-    UpdateCRC(header.length >> 8);
-    UpdateCRC(payload, payloadLength);
+    UpdateCRC(header.length & 0xFFU);
+    UpdateCRC(header.length >> 8U);
+    UpdateCRC(packet.payload, header.length);
 
     return currentCrcValue;
 }

@@ -37,7 +37,7 @@ class BeeComCrc
 
     void UpdateCRC(uint8_t dataByte);
     void UpdateCRC(const uint8_t* data, size_t length);
-    uint16_t CalculateFullPacketCRC(const PacketHeader& header, const uint8_t* payload, size_t payloadLength);
+    uint16_t CalculateFullPacketCRC(const Packet& packet);
     uint16_t GetCRC() const;
 
   private:
