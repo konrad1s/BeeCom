@@ -30,9 +30,20 @@
         0x2E93U, 0x3EB2U, 0x0ED1U, 0x1EF0U
 
 namespace beecom {
-static constexpr uint16_t lookupTable[256] = {CRC16AUGCCITT_LOOKUP};
+class BeeComCrc
+{
+  public:
+    BeeComCrc() = default;
 
-uint16_t UpdateCRC(uint16_t currentCRC, uint8_t dataByte);
-uint16_t CalculateFullPacketCRC(const PacketHeader& header, const uint8_t* payload, size_t payloadLength);
+    void UpdateCRC(uint8_t dataByte);
+    void UpdateCRC(const uint8_t* data, size_t length);
+    uint16_t CalculateFullPacketCRC(const PacketHeader& header, const uint8_t* payload, size_t payloadLength);
+    uint16_t GetCRC() const;
+
+  private:
+    static constexpr uint16_t initialCrcValue{0x1D0FU};
+    static constexpr uint16_t lookupTable[256] = {CRC16AUGCCITT_LOOKUP};
+    uint16_t currentCrcValue{initialCrcValue};
+};
 
 } // namespace beecom

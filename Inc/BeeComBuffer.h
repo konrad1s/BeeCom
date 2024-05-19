@@ -19,6 +19,11 @@ class BeeComBuffer
         return currentSize;
     }
 
+    size_t GetBufferSize() const
+    {
+        return bufferSize;
+    }
+
     void Clear()
     {
         currentSize = 0U;

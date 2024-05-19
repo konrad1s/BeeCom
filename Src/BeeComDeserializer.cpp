@@ -1,5 +1,6 @@
 #include <cstring>
 #include "BeeComDeserializer.h"
+#include "BeeComCrc.h"
 
 namespace beecom {
 void Deserializer::Deserialize(const uint8_t* data, size_t size)
@@ -65,7 +66,7 @@ void Deserializer::HandleLengthLsbWaiting(uint8_t byte)
 void Deserializer::HandleLengthMsbWaiting(uint8_t byte)
 {
     packet.header.length |= static_cast<uint16_t>(byte) << 8;
-    if (packet.header.length > MAX_PAYLOAD_SIZE)
+    if (packet.header.length > buffer.GetBufferSize())
     {
         ResetState();
     }
@@ -119,8 +120,10 @@ void Deserializer::ProcessCompletePacket()
 
 bool Deserializer::ValidateCRC() const
 {
-    uint16_t calculatedCRC = crcCalculation(packet.header, buffer.GetBuffer(), packet.header.length);
-    return calculatedCRC == packet.header.crc;
+    BeeComCrc crcCalculator;
+    uint16_t crc = crcCalculator.CalculateFullPacketCRC(packet.header, buffer.GetBuffer(), packet.header.length);
+
+    return crc == packet.header.crc;
 }
 
 void Deserializer::ResetState()

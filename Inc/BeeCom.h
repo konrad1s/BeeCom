@@ -19,12 +19,11 @@ class BeeCOM
         ByteReceiveFunction byteReceiver,
         ByteTransmitFunction byteTransmitter,
         BeeComBuffer& buffer,
-        CRCFunction crcFunc = CalculateFullPacketCRC,
         uint8_t sopValue = 0xA5U) :
         byteReceiveFunction(byteReceiver),
         byteTransmitFunction(byteTransmitter),
-        serializer(crcFunc),
-        deserializer(buffer, crcFunc, sopValue),
+        serializer(),
+        deserializer(buffer),
         sopValue(sopValue)
     {
     }

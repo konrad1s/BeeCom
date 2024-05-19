@@ -4,7 +4,6 @@
 #include <cstddef>
 
 namespace beecom {
-constexpr uint16_t MAX_PAYLOAD_SIZE = 2048U;
 
 struct PacketHeader
 {

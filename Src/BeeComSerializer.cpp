@@ -1,5 +1,6 @@
 #include <cstring>
 #include "BeeComSerializer.h"
+#include "BeeComCrc.h"
 
 namespace beecom {
 size_t Serializer::Serialize(const Packet& packet, uint8_t* buffer, size_t bufferSize) const
@@ -29,7 +30,9 @@ size_t Serializer::SerializeHeader(const Packet& packet, uint8_t* buffer) const
 
 size_t Serializer::SerializeCRC(const Packet& packet, uint8_t* buffer) const
 {
-    uint16_t crc = crcCalculation(packet.header, packet.payload, packet.header.length);
+    BeeComCrc crcCalculator;
+    uint16_t crc = crcCalculator.CalculateFullPacketCRC(packet.header, packet.payload, packet.header.length);
+
     buffer[0] = static_cast<uint8_t>(crc & 0xFFU);
     buffer[1] = static_cast<uint8_t>((crc >> 8U) & 0xFFU);
 

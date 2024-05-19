@@ -1,27 +1,34 @@
 #include "BeeComCrc.h"
 
 namespace beecom {
-uint16_t UpdateCRC(uint16_t currentCRC, uint8_t dataByte)
+
+void BeeComCrc::UpdateCRC(uint8_t dataByte)
 {
-    return (currentCRC << 8) ^ lookupTable[((currentCRC >> 8) ^ dataByte) & 0xFF];
+    currentCrcValue = (currentCrcValue << 8) ^ lookupTable[((currentCrcValue >> 8) ^ dataByte) & 0xFF];
 }
 
-uint16_t CalculateFullPacketCRC(const PacketHeader& header, const uint8_t* payload, size_t payloadLength)
+void BeeComCrc::UpdateCRC(const uint8_t* data, size_t length)
 {
-    static constexpr uint16_t initialCRCValue = 0x1D0F;
-    uint16_t crc = initialCRCValue;
-
-    crc = UpdateCRC(crc, header.sop);
-    crc = UpdateCRC(crc, header.type);
-    crc = UpdateCRC(crc, header.length & 0xFF);
-    crc = UpdateCRC(crc, header.length >> 8);
-
-    for (size_t i = 0; i < payloadLength; ++i)
+    for (size_t i = 0U; i < length; ++i)
     {
-        crc = UpdateCRC(crc, payload[i]);
+        UpdateCRC(data[i]);
     }
+}
 
-    return crc;
+uint16_t BeeComCrc::CalculateFullPacketCRC(const PacketHeader& header, const uint8_t* payload, size_t payloadLength)
+{
+    UpdateCRC(header.sop);
+    UpdateCRC(header.type);
+    UpdateCRC(header.length & 0xFF);
+    UpdateCRC(header.length >> 8);
+    UpdateCRC(payload, payloadLength);
+
+    return currentCrcValue;
+}
+
+uint16_t BeeComCrc::GetCRC() const
+{
+    return currentCrcValue;
 }
 
 } // namespace beecom

@@ -21,8 +21,8 @@ class Deserializer
         packetReceived
     };
 
-    Deserializer(BeeComBuffer& buffer, CRCFunction crcFunc, uint8_t sop) :
-        buffer(buffer), crcCalculation(crcFunc), sopValue(sop), observer(nullptr), context(nullptr)
+    Deserializer(BeeComBuffer& buffer) :
+        buffer(buffer), observer(nullptr), context(nullptr)
     {
     }
 
@@ -37,7 +37,6 @@ class Deserializer
     BeeComBuffer& buffer;
     Packet packet;
     State state = State::sopWaiting;
-    CRCFunction crcCalculation;
     uint8_t sopValue;
     IPacketObserver* observer;
     void* context;
