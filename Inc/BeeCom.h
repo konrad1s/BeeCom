@@ -15,14 +15,8 @@ class BeeCOM
     using ByteReceiveFunction = bool (*)(uint8_t* byte);
     using ByteTransmitFunction = void (*)(const uint8_t* buffer, size_t size);
 
-    BeeCOM(
-        ByteReceiveFunction byteReceiver,
-        ByteTransmitFunction byteTransmitter,
-        BeeComBuffer& buffer) :
-        byteReceiveFunction(byteReceiver),
-        byteTransmitFunction(byteTransmitter),
-        serializer(),
-        deserializer(buffer)
+    BeeCOM(ByteReceiveFunction byteReceiver, ByteTransmitFunction byteTransmitter, BeeComBuffer& buffer) :
+        byteReceiveFunction(byteReceiver), byteTransmitFunction(byteTransmitter), serializer(), deserializer(buffer)
     {
     }
 

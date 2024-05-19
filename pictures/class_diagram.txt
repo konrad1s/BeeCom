@@ -1,0 +1,115 @@
+@startuml
+package beecom {
+
+  class BeeCOM {
+    +BeeCOM(ByteReceiveFunction byteReceiver, ByteTransmitFunction byteTransmitter, BeeComBuffer& buffer)
+    +size_t Receive()
+    +void Send(uint8_t packetType, const uint8_t* payload, size_t payloadSize)
+    +void SetObserver(IPacketObserver* handler)
+    --ByteReceiveFunction byteReceiveFunction
+    --ByteTransmitFunction byteTransmitFunction
+    --Serializer serializer
+    --Deserializer deserializer
+  }
+
+  class BeeComBuffer {
+    +BeeComBuffer(uint8_t* buffer, size_t size)
+    +uint8_t* GetBuffer() const
+    +size_t GetCurrentSize() const
+    +size_t GetBufferSize() const
+    +void Clear()
+    +bool Append(const uint8_t* data, size_t size)
+    +bool Append(uint8_t byte)
+    --uint8_t* buffer
+    --size_t bufferSize
+    --size_t currentSize
+  }
+
+  class BeeComCrc {
+    +BeeComCrc()
+    +void UpdateCRC(uint8_t dataByte)
+    +void UpdateCRC(const uint8_t* data, size_t length)
+    +uint16_t CalculateFullPacketCRC(const Packet& packet)
+    +uint16_t GetCRC() const
+    --static constexpr uint16_t initialCrcValue = 0x1D0FU
+    --static constexpr uint16_t lookupTable[256]
+    --uint16_t currentCrcValue = initialCrcValue
+  }
+
+  class Deserializer {
+    +Deserializer(BeeComBuffer& buffer)
+    +void Deserialize(const uint8_t* data, size_t size)
+    +void SetObserver(IPacketObserver* obs, void* context)
+    --BeeComBuffer& buffer
+    --Packet packet
+    --State state = State::sopWaiting
+    --uint8_t sopValue
+    --IPacketObserver* observer
+    --void* context
+    --void HandleStateChange(uint8_t byte)
+    --void HandleSOPWaiting(uint8_t byte)
+    --void HandleTypeWaiting(uint8_t byte)
+    --void HandleLengthLsbWaiting(uint8_t byte)
+    --void HandleLengthMsbWaiting(uint8_t byte)
+    --void HandleCRCLowWaiting(uint8_t byte)
+    --void HandleCRCHighWaiting(uint8_t byte)
+    --void HandleGettingPayload(uint8_t byte)
+    --void ProcessCompletePacket()
+    --bool ValidateCRC() const
+    --void ResetState()
+  }
+
+  class Serializer {
+    +Serializer()
+    +size_t Serialize(const Packet& packet, uint8_t* buffer, size_t bufferSize) const
+    +size_t SerializeHeader(const Packet& packet, uint8_t* buffer) const
+    +size_t SerializeCRC(const Packet& packet, uint8_t* buffer) const
+    --size_t CalculateRequiredSize(const Packet& packet) const
+  }
+
+  class IPacketObserver {
+    <<interface>>
+    +~IPacketObserver()
+    +void OnPacketReceived(const Packet& packet, bool crcValid, void* beeComInstance)
+  }
+
+  class PacketHeader {
+    +uint8_t sop = 0U
+    +uint8_t type = 0U
+    +uint16_t length = 0U
+    +uint16_t crc = 0U
+  }
+
+  class Packet {
+    +PacketHeader header
+    +uint8_t* payload
+    +void Reset()
+  }
+
+package ObserverUserExample {
+  class UserPacketObserver {
+    +void OnPacketReceived(const Packet& packet, bool crcValid, void* beeComInstance)
+    --void handlePing(const Packet& packet, BeeCOM* beeCom)
+    --void handlePong(const Packet& packet, BeeCOM* beeCom)
+    --void handleInvalidPacket(const Packet& packet, BeeCOM* beeCom)
+  }
+  
+  enum PacketType {
+    ping = 0x01U
+    pong = 0x02U
+    invalidPacket = 0xFFU
+  }
+}
+
+  BeeCOM *-- Serializer
+  BeeCOM *-- Deserializer
+  Deserializer *-- BeeComBuffer
+  Deserializer o-- IPacketObserver
+  Packet *-- PacketHeader
+  Deserializer ..> BeeComCrc : uses
+  Serializer ..> BeeComCrc : uses
+  Serializer --> Packet
+  Deserializer --> Packet
+  IPacketObserver <|-- UserPacketObserver 
+}
+@enduml
