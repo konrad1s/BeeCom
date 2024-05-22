@@ -34,7 +34,6 @@ class Deserializer
     BeeComBuffer& buffer;
     Packet packet;
     State state = State::sopWaiting;
-    uint8_t sopValue;
     IPacketObserver* observer;
     void* context;
 
